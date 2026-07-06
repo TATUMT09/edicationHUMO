@@ -28,6 +28,12 @@ const schema = new mongoose.Schema({
     default: 'present',
     required: true,
   },
+  // Tracks which status was last sent to parents, so "Xabar yuborish" only
+  // notifies about records that actually changed since the previous send.
+  lastNotifiedStatus: {
+    type: String,
+    enum: ['present', 'absent'],
+  },
   createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
   created: {
     type: Date,

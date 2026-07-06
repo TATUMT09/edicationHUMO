@@ -2,13 +2,9 @@ const mongoose = require('mongoose');
 const createCRUDController = require('@/controllers/middlewaresControllers/createCRUDController');
 const { getTeacherGroupId } = require('@/utils/teacherScope');
 
-const summary = require('./summary');
-
 function modelController() {
-  const Model = mongoose.model('Client');
-  const methods = createCRUDController('Client');
-
-  methods.summary = (req, res) => summary(Model, req, res);
+  const Model = mongoose.model('Group');
+  const methods = createCRUDController('Group');
 
   const original = { listAll: methods.listAll, filter: methods.filter, list: methods.list };
 
@@ -20,7 +16,7 @@ function modelController() {
       return res.status(200).json({ success: true, result: [], message: 'Collection is Empty' });
     }
     if (groupId) {
-      const result = await Model.find({ removed: false, group: groupId }).sort({ created: -1 }).exec();
+      const result = await Model.find({ removed: false, _id: groupId }).sort({ created: -1 }).exec();
       return res.status(200).json({ success: true, result, message: 'Successfully found all documents' });
     }
     return original.listAll(req, res);
@@ -32,23 +28,29 @@ function modelController() {
       return res.status(200).json({ success: true, result: [], message: 'Collection is Empty' });
     }
     if (groupId) {
-      req.query.filter = 'group';
+      req.query.filter = '_id';
       req.query.equal = groupId;
     }
     return run(req, res);
   };
 
   methods.list = (req, res) => restrictQueryToOwnGroup(req, res, original.list);
-  methods.filter = async (req, res) => {
-    const groupId = await getTeacherGroupId(req.admin);
-    if (groupId === null) {
-      return res.status(200).json({ success: true, result: [], message: 'Collection is Empty' });
+  methods.filter = (req, res) => restrictQueryToOwnGroup(req, res, original.filter);
+
+  const ownerOnly = (handler) => (req, res) => {
+    if (req.admin?.role === 'teacher') {
+      return res.status(403).json({
+        success: false,
+        result: null,
+        message: "Bu amal faqat administratorlar uchun ruxsat etilgan",
+      });
     }
-    if (groupId && req.query.filter === 'group' && req.query.equal !== groupId) {
-      return res.status(200).json({ success: true, result: [], message: 'Collection is Empty' });
-    }
-    return original.filter(req, res);
+    return handler(req, res);
   };
+
+  methods.create = ownerOnly(methods.create);
+  methods.update = ownerOnly(methods.update);
+  methods.delete = ownerOnly(methods.delete);
 
   return methods;
 }

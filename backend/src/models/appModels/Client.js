@@ -18,6 +18,7 @@ const schema = new mongoose.Schema({
   country: String,
   address: String,
   email: String,
+  birthday: Date,
   group: { type: mongoose.Schema.ObjectId, ref: 'Group', autopopulate: true },
   createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
   assigned: { type: mongoose.Schema.ObjectId, ref: 'Admin' },

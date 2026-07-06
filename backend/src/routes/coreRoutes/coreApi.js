@@ -7,6 +7,7 @@ const router = express.Router();
 const adminController = require('@/controllers/coreControllers/adminController');
 const settingController = require('@/controllers/coreControllers/settingController');
 const notifyController = require('@/controllers/coreControllers/notifyController');
+const staffController = require('@/controllers/coreControllers/staffController');
 
 const { singleStorageUpload } = require('@/middlewares/uploadMiddleware');
 
@@ -53,6 +54,12 @@ router.route('/setting/updateManySetting').patch(catchErrors(settingController.u
 
 // //____________________________________________ API for Telegram bot notifications _____
 router.route('/notify/unpaid-reminder').post(catchErrors(notifyController.unpaidReminder));
-router.route('/notify/admin-summary').post(catchErrors(notifyController.adminSummary));
+router.route('/notify/attendance-status').post(catchErrors(notifyController.attendanceStatus));
+
+// //____________________________________________ API for Staff (teachers) management _____
+router.route('/staff/list').get(catchErrors(staffController.list));
+router.route('/staff/create').post(catchErrors(staffController.create));
+router.route('/staff/update/:id').patch(catchErrors(staffController.update));
+router.route('/staff/delete/:id').delete(catchErrors(staffController.remove));
 
 module.exports = router;

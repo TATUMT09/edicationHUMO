@@ -9,7 +9,7 @@ import {
   ArrowRightOutlined,
   ArrowLeftOutlined,
 } from '@ant-design/icons';
-import { Dropdown, Table, Button, Input } from 'antd';
+import { Dropdown, Table, Button, Input, List, Pagination } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -18,12 +18,14 @@ import { selectListItems } from '@/redux/crud/selectors';
 import useLanguage from '@/locale/useLanguage';
 import { dataForTable } from '@/utils/dataStructure';
 import { useMoney, useDate } from '@/settings';
+import useResponsive from '@/hooks/useResponsive';
+import { get } from '@/utils/helpers';
 
 import { generate as uniqueId } from 'shortid';
 
 import { useCrudContext } from '@/context/crud';
 
-function AddNewItem({ config }) {
+function AddNewItem({ config, isMobile }) {
   const { crudContextAction } = useCrudContext();
   const { collapsedBox, panel } = crudContextAction;
   const { ADD_NEW_ENTITY } = config;
@@ -34,7 +36,7 @@ function AddNewItem({ config }) {
   };
 
   return (
-    <Button onClick={handelClick} type="primary">
+    <Button onClick={handelClick} type="primary" block={isMobile}>
       {ADD_NEW_ENTITY}
     </Button>
   );
@@ -46,6 +48,7 @@ export default function DataTable({ config, extra = [] }) {
   const translate = useLanguage();
   const { moneyFormatter } = useMoney();
   const { dateFormat } = useDate();
+  const { isMobile } = useResponsive();
 
   const items = [
     {
@@ -103,46 +106,48 @@ export default function DataTable({ config, extra = [] }) {
     dispatchColumns = [...dataTableColumns];
   }
 
+  const ActionMenu = ({ record }) => (
+    <Dropdown
+      menu={{
+        items,
+        onClick: ({ key }) => {
+          switch (key) {
+            case 'read':
+              handleRead(record);
+              break;
+            case 'edit':
+              handleEdit(record);
+              break;
+
+            case 'delete':
+              handleDelete(record);
+              break;
+            case 'updatePassword':
+              handleUpdatePassword(record);
+              break;
+
+            default:
+              break;
+          }
+          // else if (key === '2')handleCloseTask
+        },
+      }}
+      trigger={['click']}
+    >
+      <EllipsisOutlined
+        style={{ cursor: 'pointer', fontSize: '24px' }}
+        onClick={(e) => e.preventDefault()}
+      />
+    </Dropdown>
+  );
+
   dataTableColumns = [
     ...dispatchColumns,
     {
       title: '',
       key: 'action',
       fixed: 'right',
-      render: (_, record) => (
-        <Dropdown
-          menu={{
-            items,
-            onClick: ({ key }) => {
-              switch (key) {
-                case 'read':
-                  handleRead(record);
-                  break;
-                case 'edit':
-                  handleEdit(record);
-                  break;
-
-                case 'delete':
-                  handleDelete(record);
-                  break;
-                case 'updatePassword':
-                  handleUpdatePassword(record);
-                  break;
-
-                default:
-                  break;
-              }
-              // else if (key === '2')handleCloseTask
-            },
-          }}
-          trigger={['click']}
-        >
-          <EllipsisOutlined
-            style={{ cursor: 'pointer', fontSize: '24px' }}
-            onClick={(e) => e.preventDefault()}
-          />
-        </Dropdown>
-      ),
+      render: (_, record) => <ActionMenu record={record} />,
     },
   ];
 
@@ -183,32 +188,104 @@ export default function DataTable({ config, extra = [] }) {
         title={DATATABLE_TITLE}
         ghost={false}
         extra={[
-          <Input
-            key={`searchFilterDataTable}`}
-            onChange={filterTable}
-            placeholder={translate('search')}
-            allowClear
-          />,
-          <Button onClick={handelDataTableLoad} key={`${uniqueId()}`} icon={<RedoOutlined />}>
-            {translate('Refresh')}
-          </Button>,
-
-          <AddNewItem key={`${uniqueId()}`} config={config} />,
+          <div
+            key="dataTableControls"
+            style={{
+              display: 'flex',
+              gap: '8px',
+              flexWrap: 'wrap',
+              flexDirection: isMobile ? 'column' : 'row',
+              width: isMobile ? '100%' : undefined,
+            }}
+          >
+            <Input
+              onChange={filterTable}
+              placeholder={translate('search')}
+              allowClear
+              style={isMobile ? { width: '100%' } : undefined}
+            />
+            <Button
+              onClick={handelDataTableLoad}
+              icon={<RedoOutlined />}
+              block={isMobile}
+            >
+              {translate('Refresh')}
+            </Button>
+            <AddNewItem config={config} isMobile={isMobile} />
+          </div>,
         ]}
         style={{
           padding: '20px 0px',
         }}
       ></PageHeader>
 
-      <Table
-        columns={dataTableColumns}
-        rowKey={(item) => item._id}
-        dataSource={dataSource}
-        pagination={pagination}
-        loading={listIsLoading}
-        onChange={handelDataTableLoad}
-        scroll={{ x: true }}
-      />
+      {isMobile ? (
+        <>
+          <List
+            bordered
+            loading={listIsLoading}
+            dataSource={dataSource}
+            renderItem={(record) => {
+              const displayColumns = dataTableColumns.slice(0, -1);
+              return (
+                <List.Item key={record._id}>
+                  <div style={{ width: '100%' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {displayColumns.map((col, idx) => {
+                          const rawValue = Array.isArray(col.dataIndex)
+                            ? get(record, col.dataIndex.join('.'))
+                            : get(record, col.dataIndex);
+                          const content = col.render ? col.render(rawValue, record) : rawValue;
+                          if (content === undefined || content === null || content === '')
+                            return null;
+                          return (
+                            <div key={col.key || idx} style={{ marginBottom: '4px' }}>
+                              {col.title ? (
+                                <span style={{ color: '#999', fontSize: '12px' }}>
+                                  {col.title}:{' '}
+                                </span>
+                              ) : null}
+                              <span>{content}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <ActionMenu record={record} />
+                    </div>
+                  </div>
+                </List.Item>
+              );
+            }}
+          />
+          {pagination && (
+            <Pagination
+              current={pagination.page}
+              total={pagination.count}
+              pageSize={10}
+              onChange={(page, pageSize) => handelDataTableLoad({ current: page, pageSize })}
+              style={{ marginTop: '16px', textAlign: 'center' }}
+            />
+          )}
+        </>
+      ) : (
+        <Table
+          columns={dataTableColumns}
+          rowKey={(item) => item._id}
+          dataSource={dataSource}
+          pagination={pagination}
+          loading={listIsLoading}
+          onChange={handelDataTableLoad}
+          scroll={{ x: true }}
+        />
+      )}
     </>
   );
 }

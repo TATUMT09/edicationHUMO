@@ -18,6 +18,7 @@ const schema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  teacher: { type: mongoose.Schema.ObjectId, ref: 'Admin', autopopulate: true },
   createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
   created: {
     type: Date,

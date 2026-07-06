@@ -12,6 +12,9 @@ export const fields = {
   phone: {
     type: 'phone',
   },
+  birthday: {
+    type: 'date',
+  },
   address: {
     type: 'string',
   },

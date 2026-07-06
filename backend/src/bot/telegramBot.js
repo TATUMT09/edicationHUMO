@@ -176,43 +176,34 @@ async function notifyParentsOfStudent(studentId, text) {
   return sent;
 }
 
-async function notifyAbsence(student, group, dateStr) {
-  if (!bot || !student?._id) return;
-  await notifyParentsOfStudent(
+async function notifyAttendance(student, group, dateStr, status) {
+  if (!bot || !student?._id) return 0;
+  const text =
+    status === 'present'
+      ? `Assalomu alaykum! ${student.name} bugun (${dateStr}) "${group?.name || ''}" guruhidagi darsga keldi.`
+      : `Assalomu alaykum! ${student.name} bugun (${dateStr}) "${group?.name || ''}" guruhidagi darsga kelmadi.`;
+  return notifyParentsOfStudent(student._id, text);
+}
+
+async function notifyUnpaidReminder(debtors) {
+  if (!bot) return { sent: 0 };
+  let sent = 0;
+  for (const { student, remaining, paidAmount } of debtors) {
+    const text =
+      paidAmount > 0
+        ? `Assalomu alaykum! Eslatma: ${student.name} uchun shu oylik to'lovdan ${remaining.toLocaleString('ru-RU')} so'm qarz qoldi (${paidAmount.toLocaleString('ru-RU')} so'm to'langan). Iltimos, qolgan summani to'lang.`
+        : `Assalomu alaykum! Eslatma: ${student.name} uchun shu oylik to'lov hali amalga oshirilmagan (${remaining.toLocaleString('ru-RU')} so'm). Iltimos, to'lovni amalga oshiring.`;
+    sent += await notifyParentsOfStudent(student._id, text);
+  }
+  return { sent };
+}
+
+async function notifyBirthday(student) {
+  if (!bot || !student?._id) return 0;
+  return notifyParentsOfStudent(
     student._id,
-    `Assalomu alaykum! ${student.name} bugun (${dateStr}) "${group?.name || ''}" guruhidagi darsga kelmadi.`
+    `🎉 Tabriklaymiz! Bugun ${student.name} ning tug'ilgan kuni!\n\nHUMO Education jamoasi sizni va farzandingizni chin qalbdan tabriklaydi, unga sog'lom-omon, baxtli hayot tilaydi!`
   );
 }
 
-async function notifyUnpaidReminder(students) {
-  if (!bot) return { sent: 0 };
-  let sent = 0;
-  for (const student of students) {
-    sent += await notifyParentsOfStudent(
-      student._id,
-      `Assalomu alaykum! Eslatma: ${student.name} uchun shu oylik to'lov hali amalga oshirilmagan. Iltimos, to'lovni amalga oshiring.`
-    );
-  }
-  return { sent };
-}
-
-async function notifyAdmins(text) {
-  if (!bot) return { sent: 0 };
-  const Admin = mongoose.model('Admin');
-  const admins = await Admin.find({
-    removed: false,
-    telegramChatId: { $exists: true, $ne: null },
-  });
-  let sent = 0;
-  for (const admin of admins) {
-    try {
-      await bot.sendMessage(admin.telegramChatId, text);
-      sent++;
-    } catch (err) {
-      console.error('Failed to send admin notification:', err.message);
-    }
-  }
-  return { sent };
-}
-
-module.exports = { startBot, notifyAbsence, notifyUnpaidReminder, notifyAdmins };
+module.exports = { startBot, notifyAttendance, notifyUnpaidReminder, notifyBirthday };

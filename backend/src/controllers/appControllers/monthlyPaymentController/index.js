@@ -3,8 +3,8 @@ const createCRUDController = require('@/controllers/middlewaresControllers/creat
 const { getTeacherGroupId } = require('@/utils/teacherScope');
 
 function modelController() {
-  const Model = mongoose.model('Attendance');
-  const methods = createCRUDController('Attendance');
+  const Model = mongoose.model('MonthlyPayment');
+  const methods = createCRUDController('MonthlyPayment');
 
   const forbidden = (res) =>
     res.status(403).json({
@@ -13,53 +13,46 @@ function modelController() {
       message: "Bu amal faqat o'z guruhingiz uchun ruxsat etilgan",
     });
 
-  // Notifications are NOT sent automatically on save — only when the admin
-  // explicitly presses "Xabar yuborish" (see notifyController.attendanceStatus).
+  const original = {
+    listAll: methods.listAll,
+    filter: methods.filter,
+    list: methods.list,
+    create: methods.create,
+    update: methods.update,
+  };
+
   methods.create = async (req, res) => {
     const groupId = await getTeacherGroupId(req.admin);
     if (groupId === null || (groupId && req.body.group !== groupId)) return forbidden(res);
 
-    req.body.removed = false;
-    const result = await new Model({ ...req.body }).save();
+    const amount = req.body.amount ?? 0;
+    const paidAmount = req.body.paidAmount ?? 0;
+    req.body.paidAmount = paidAmount;
+    req.body.paid = paidAmount >= amount && amount > 0;
+    if (paidAmount > 0) req.body.paidAt = new Date();
 
-    return res.status(200).json({
-      success: true,
-      result,
-      message: 'Successfully Created the document in Model ',
-    });
+    return original.create(req, res);
   };
 
   methods.update = async (req, res) => {
     const groupId = await getTeacherGroupId(req.admin);
     if (groupId === null) return forbidden(res);
 
-    req.body.removed = false;
     const existing = await Model.findOne({ _id: req.params.id, removed: false });
-    // `group` is autopopulated (a full document), so always compare via ._id.
-    if (groupId && String(existing?.group?._id || existing?.group) !== groupId) return forbidden(res);
-
-    const result = await Model.findOneAndUpdate(
-      { _id: req.params.id, removed: false },
-      req.body,
-      { new: true, runValidators: true }
-    ).exec();
-
-    if (!result) {
-      return res.status(404).json({
-        success: false,
-        result: null,
-        message: 'No document found ',
-      });
+    if (!existing) {
+      return res.status(404).json({ success: false, result: null, message: 'No document found' });
     }
+    // `group` is autopopulated (a full document), so always compare via ._id.
+    if (groupId && String(existing.group?._id || existing.group) !== groupId) return forbidden(res);
 
-    return res.status(200).json({
-      success: true,
-      result,
-      message: 'we update this document ',
-    });
+    const amount = req.body.amount ?? existing.amount;
+    const paidAmount = req.body.paidAmount ?? existing.paidAmount;
+    req.body.paidAmount = paidAmount;
+    req.body.paid = paidAmount >= amount && amount > 0;
+    if (paidAmount > (existing.paidAmount || 0)) req.body.paidAt = new Date();
+
+    return original.update(req, res);
   };
-
-  const original = { listAll: methods.listAll, filter: methods.filter, list: methods.list };
 
   methods.filter = async (req, res) => {
     const groupId = await getTeacherGroupId(req.admin);

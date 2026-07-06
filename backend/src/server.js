@@ -42,6 +42,16 @@ for (const filePath of modelsFiles) {
   require(path.resolve(filePath));
 }
 
+// On a fresh/empty database (e.g. first deploy to a new server), create the
+// default admin accounts automatically so no manual `npm run setup` step is
+// required. No-op if admins already exist.
+const seedDefaults = require('./setup/seedDefaults');
+mongoose.connection.once('open', () => {
+  seedDefaults().catch((error) => {
+    console.error('🚫 Failed to seed default admins:', error.message);
+  });
+});
+
 const { startBot } = require('./bot/telegramBot');
 startBot();
 

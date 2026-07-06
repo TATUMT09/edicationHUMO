@@ -26,6 +26,10 @@ const schema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  paidAmount: {
+    type: Number,
+    default: 0,
+  },
   paid: {
     type: Boolean,
     default: false,

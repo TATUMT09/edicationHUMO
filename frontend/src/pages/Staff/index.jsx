@@ -18,25 +18,30 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { request } from '@/request';
 import useResponsive from '@/hooks/useResponsive';
 
-export default function Parent() {
+const ROLE_LABELS = {
+  owner: 'Administrator',
+  teacher: "O'qituvchi",
+};
+
+export default function Staff() {
   const { isMobile } = useResponsive();
-  const [parents, setParents] = useState([]);
-  const [clients, setClients] = useState([]);
+  const [staff, setStaff] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingParent, setEditingParent] = useState(null);
+  const [editingStaff, setEditingStaff] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [form] = Form.useForm();
 
   const loadData = () => {
     setIsLoading(true);
     Promise.all([
-      request.listAll({ entity: 'parent' }),
-      request.listAll({ entity: 'client' }),
-    ]).then(([parentsRes, clientsRes]) => {
-      setParents(parentsRes.success ? parentsRes.result : []);
-      setClients(clientsRes.success ? clientsRes.result : []);
+      request.list({ entity: 'staff' }),
+      request.listAll({ entity: 'group' }),
+    ]).then(([staffRes, groupsRes]) => {
+      setStaff(staffRes.success ? staffRes.result : []);
+      setGroups(groupsRes.success ? groupsRes.result : []);
       setIsLoading(false);
     });
   };
@@ -45,36 +50,38 @@ export default function Parent() {
     loadData();
   }, []);
 
+  const groupTaughtBy = (adminId) => groups.find((g) => (g.teacher?._id || g.teacher) === adminId);
+
   const openCreateModal = () => {
-    setEditingParent(null);
+    setEditingStaff(null);
     form.resetFields();
     setModalOpen(true);
   };
 
-  const openEditModal = (parent) => {
-    setEditingParent(parent);
+  const openEditModal = (person) => {
+    setEditingStaff(person);
     form.setFieldsValue({
-      name: parent.name,
-      phone: parent.phone,
-      username: parent.username,
+      name: person.name,
+      email: person.email,
+      role: person.role,
       password: undefined,
-      children: (parent.children || []).map((c) => c._id),
     });
     setModalOpen(true);
   };
 
-  const handleDelete = async (parent) => {
-    const res = await request.delete({ entity: 'parent', id: parent._id });
+  const handleDelete = async (person) => {
+    const res = await request.delete({ entity: 'staff', id: person._id });
     if (res.success) loadData();
+    else message.error(res.message);
   };
 
   const handleSubmit = async () => {
     const values = await form.validateFields();
     setIsSaving(true);
 
-    const res = editingParent
-      ? await request.update({ entity: 'parent', id: editingParent._id, jsonData: values })
-      : await request.create({ entity: 'parent', jsonData: values });
+    const res = editingStaff
+      ? await request.update({ entity: 'staff', id: editingStaff._id, jsonData: values })
+      : await request.create({ entity: 'staff', jsonData: values });
 
     setIsSaving(false);
     if (res.success) {
@@ -85,46 +92,39 @@ export default function Parent() {
     }
   };
 
-  const filteredParents = parents.filter((p) => {
+  const RoleTag = ({ person }) => {
+    const taughtGroup = groupTaughtBy(person._id);
+    return (
+      <>
+        <Tag color={person.role === 'owner' ? 'gold' : 'blue'}>{ROLE_LABELS[person.role]}</Tag>
+        {taughtGroup && <Tag color="green">{taughtGroup.name}</Tag>}
+      </>
+    );
+  };
+
+  const filteredStaff = staff.filter((s) => {
     const q = searchText.trim().toLowerCase();
     if (!q) return true;
-    return (
-      p.name?.toLowerCase().includes(q) ||
-      p.phone?.toLowerCase().includes(q) ||
-      p.username?.toLowerCase().includes(q)
-    );
+    return s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q);
   });
 
   const columns = [
     { title: 'Ism', dataIndex: 'name' },
-    { title: 'Telefon', dataIndex: 'phone' },
-    { title: 'Login', dataIndex: 'username' },
+    { title: 'Email', dataIndex: 'email' },
     {
-      title: 'Farzandlar',
-      dataIndex: 'children',
-      render: (children) => (
-        <>
-          {(children || []).map((c) => (
-            <Tag key={c._id}>{c.name}</Tag>
-          ))}
-        </>
-      ),
-    },
-    {
-      title: 'Botga ulangan',
-      dataIndex: 'telegramChatId',
-      render: (chatId) =>
-        chatId ? <Tag color="green">Ulangan</Tag> : <Tag color="default">Ulanmagan</Tag>,
+      title: 'Rol / Guruh',
+      key: 'role',
+      render: (_, person) => <RoleTag person={person} />,
     },
     {
       title: '',
       key: 'actions',
-      render: (_, parent) => (
+      render: (_, person) => (
         <Space>
-          <Button icon={<EditOutlined />} size="small" onClick={() => openEditModal(parent)} />
+          <Button icon={<EditOutlined />} size="small" onClick={() => openEditModal(person)} />
           <Popconfirm
             title="O'chirishni tasdiqlaysizmi?"
-            onConfirm={() => handleDelete(parent)}
+            onConfirm={() => handleDelete(person)}
             okText="Ha"
             cancelText="Yo'q"
           >
@@ -137,7 +137,7 @@ export default function Parent() {
 
   return (
     <Card
-      title="Ota-onalar"
+      title="Xodimlar"
       styles={{ body: isMobile ? { padding: '12px' } : undefined }}
       extra={
         !isMobile && (
@@ -159,7 +159,7 @@ export default function Parent() {
         </Button>
       )}
       <Input
-        placeholder="Ism, telefon yoki login bo'yicha qidirish"
+        placeholder="Ism yoki email bo'yicha qidirish"
         allowClear
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
@@ -169,10 +169,10 @@ export default function Parent() {
         <List
           bordered
           loading={isLoading}
-          dataSource={filteredParents}
+          dataSource={filteredStaff}
           pagination={{ pageSize: 15, size: 'small' }}
-          renderItem={(parent) => (
-            <List.Item key={parent._id} style={{ padding: '8px 12px' }}>
+          renderItem={(person) => (
+            <List.Item key={person._id} style={{ padding: '8px 12px' }}>
               <div
                 style={{
                   width: '100%',
@@ -182,7 +182,7 @@ export default function Parent() {
                 }}
               >
                 <span
-                  title={`${parent.name} — ${parent.phone || ''}`}
+                  title={`${person.name} — ${person.email}`}
                   style={{
                     flex: 1,
                     minWidth: 0,
@@ -191,29 +191,17 @@ export default function Parent() {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  <b>{parent.name}</b>
-                  {parent.phone && (
-                    <span style={{ color: '#999' }}> · {parent.phone}</span>
-                  )}
+                  <b>{person.name}</b>
+                  <span style={{ color: '#999' }}> · {person.email}</span>
                 </span>
-                <span
-                  title={parent.telegramChatId ? 'Botga ulangan' : 'Ulanmagan'}
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    flexShrink: 0,
-                    background: parent.telegramChatId ? '#52c41a' : '#d9d9d9',
-                  }}
-                />
                 <Button
                   icon={<EditOutlined />}
                   size="small"
-                  onClick={() => openEditModal(parent)}
+                  onClick={() => openEditModal(person)}
                 />
                 <Popconfirm
                   title="O'chirishni tasdiqlaysizmi?"
-                  onConfirm={() => handleDelete(parent)}
+                  onConfirm={() => handleDelete(person)}
                   okText="Ha"
                   cancelText="Yo'q"
                 >
@@ -227,7 +215,7 @@ export default function Parent() {
         <Table
           rowKey="_id"
           columns={columns}
-          dataSource={filteredParents}
+          dataSource={filteredStaff}
           loading={isLoading}
           pagination={{ pageSize: 20 }}
           scroll={{ x: true }}
@@ -235,7 +223,7 @@ export default function Parent() {
       )}
 
       <Modal
-        title={editingParent ? "Ota-onani tahrirlash" : "Yangi ota-ona qo'shish"}
+        title={editingStaff ? 'Xodimni tahrirlash' : "Yangi xodim qo'shish"}
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         onOk={handleSubmit}
@@ -248,25 +236,28 @@ export default function Parent() {
           <Form.Item name="name" label="Ism" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="phone" label="Telefon">
-            <Input placeholder="+998 xx xxx xx xx" />
+          <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+            <Input autoComplete="off" disabled={!!editingStaff} />
           </Form.Item>
-          <Form.Item name="username" label="Login (foydalanuvchi nomi)" rules={[{ required: true }]}>
-            <Input autoComplete="off" />
+          <Form.Item
+            name="role"
+            label="Rol"
+            rules={[{ required: true }]}
+            initialValue="teacher"
+          >
+            <Select
+              options={[
+                { value: 'teacher', label: "O'qituvchi (faqat o'z guruhini boshqaradi)" },
+                { value: 'owner', label: 'Administrator (hammasini boshqaradi)' },
+              ]}
+            />
           </Form.Item>
           <Form.Item
             name="password"
-            label={editingParent ? "Parol (o'zgartirish uchun to'ldiring)" : 'Parol'}
-            rules={[{ required: !editingParent }]}
+            label={editingStaff ? "Parol (o'zgartirish uchun to'ldiring)" : 'Parol'}
+            rules={[{ required: !editingStaff }]}
           >
             <Input.Password autoComplete="new-password" />
-          </Form.Item>
-          <Form.Item name="children" label="Farzandlari">
-            <Select
-              mode="multiple"
-              placeholder="O'quvchilarni tanlang"
-              options={clients.map((c) => ({ value: c._id, label: c.name }))}
-            />
           </Form.Item>
         </Form>
       </Modal>

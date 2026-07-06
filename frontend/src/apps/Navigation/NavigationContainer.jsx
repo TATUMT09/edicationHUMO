@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Drawer, Layout, Menu } from 'antd';
 
 import { useAppContext } from '@/context/appContext';
+import { selectCurrentAdmin } from '@/redux/auth/selectors';
 
 import useLanguage from '@/locale/useLanguage';
 import logoIcon from '@/style/images/humo-logo.jpg';
@@ -10,21 +12,12 @@ import logoIcon from '@/style/images/humo-logo.jpg';
 import useResponsive from '@/hooks/useResponsive';
 
 import {
-  SettingOutlined,
   CustomerServiceOutlined,
-  ContainerOutlined,
-  FileSyncOutlined,
   DashboardOutlined,
-  TagOutlined,
-  TagsOutlined,
   UserOutlined,
-  CreditCardOutlined,
   MenuOutlined,
   FileOutlined,
-  ShopOutlined,
-  FilterOutlined,
   WalletOutlined,
-  ReconciliationOutlined,
   ScheduleOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
@@ -48,6 +41,8 @@ function Sidebar({ collapsible, isMobile = false }) {
 
   const translate = useLanguage();
   const navigate = useNavigate();
+  const currentAdmin = useSelector(selectCurrentAdmin);
+  const isTeacher = currentAdmin?.role === 'teacher';
 
   const items = [
     {
@@ -75,32 +70,22 @@ function Sidebar({ collapsible, isMobile = false }) {
       icon: <CustomerServiceOutlined />,
       label: <Link to={'/customer'}>{translate('customers')}</Link>,
     },
-    {
+    !isTeacher && {
       key: 'parent',
       icon: <UserOutlined />,
       label: <Link to={'/parent'}>{translate('parents')}</Link>,
     },
-    {
+    !isTeacher && {
       key: 'group',
       icon: <TeamOutlined />,
       label: <Link to={'/group'}>{translate('groups')}</Link>,
     },
-    {
-      key: 'invoice',
-      icon: <ContainerOutlined />,
-      label: <Link to={'/invoice'}>{translate('invoices')}</Link>,
+    !isTeacher && {
+      key: 'staff',
+      icon: <TeamOutlined />,
+      label: <Link to={'/staff'}>{translate('staff')}</Link>,
     },
-    {
-      key: 'generalSettings',
-      label: <Link to={'/settings'}>{translate('settings')}</Link>,
-      icon: <SettingOutlined />,
-    },
-    {
-      key: 'about',
-      label: <Link to={'/about'}>{translate('about')}</Link>,
-      icon: <ReconciliationOutlined />,
-    },
-  ];
+  ].filter(Boolean);
 
   useEffect(() => {
     if (location)

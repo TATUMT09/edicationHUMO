@@ -3,7 +3,6 @@ import {
   Select,
   DatePicker,
   Table,
-  Switch,
   Button,
   Card,
   message,
@@ -13,11 +12,50 @@ import {
   List,
   Space,
 } from 'antd';
-import { SaveOutlined, CheckOutlined, CloseOutlined, SendOutlined } from '@ant-design/icons';
+import { SaveOutlined, SendOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 import { request } from '@/request';
 import useResponsive from '@/hooks/useResponsive';
+
+function formatSom(value) {
+  return `${(value || 0).toLocaleString('ru-RU')} so'm`;
+}
+
+// Defined outside MonthlyPayment so their identity is stable across renders —
+// keeping them as inline closures inside the component caused React to
+// remount the <InputNumber> on every keystroke, kicking focus out after each digit.
+function AmountInput({ studentId, amount, onChange, isMobile }) {
+  return (
+    <InputNumber
+      min={0}
+      value={amount}
+      onChange={(value) => onChange(studentId, value)}
+      style={{ width: isMobile ? '100%' : 140 }}
+      addonAfter="so'm"
+    />
+  );
+}
+
+function PaidAmountInput({ studentId, amount, paidAmount, onChange, isMobile }) {
+  return (
+    <InputNumber
+      min={0}
+      max={amount}
+      value={paidAmount}
+      onChange={(value) => onChange(studentId, value || 0)}
+      style={{ width: isMobile ? '100%' : 140 }}
+      addonAfter="so'm"
+    />
+  );
+}
+
+function StatusTag({ amount, paidAmount }) {
+  const remaining = (amount || 0) - (paidAmount || 0);
+  if (remaining <= 0) return <Tag color="green">To'langan</Tag>;
+  if (paidAmount > 0) return <Tag color="orange">Qarz: {formatSom(remaining)}</Tag>;
+  return <Tag color="red">To'lanmagan</Tag>;
+}
 
 export default function MonthlyPayment() {
   const { isMobile } = useResponsive();
@@ -25,8 +63,10 @@ export default function MonthlyPayment() {
   const [selectedGroup, setSelectedGroup] = useState(undefined);
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
   const [students, setStudents] = useState([]);
-  const [paidMap, setPaidMap] = useState({});
   const [amountMap, setAmountMap] = useState({});
+  const [paidAmountMap, setPaidAmountMap] = useState({});
+  const [originalAmountMap, setOriginalAmountMap] = useState({});
+  const [originalPaidAmountMap, setOriginalPaidAmountMap] = useState({});
   const [recordIdMap, setRecordIdMap] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -54,38 +94,40 @@ export default function MonthlyPayment() {
       setStudents(studentList);
 
       const monthStr = selectedMonth.format('YYYY-MM');
-      const newPaidMap = {};
       const newAmountMap = {};
+      const newPaidAmountMap = {};
       const newRecordIdMap = {};
       const defaultFee = currentGroup?.monthlyFee || 0;
 
       studentList.forEach((student) => {
         newAmountMap[student._id] = defaultFee;
-        newPaidMap[student._id] = false;
+        newPaidAmountMap[student._id] = 0;
       });
 
       (paymentsRes.success ? paymentsRes.result : [])
         .filter((rec) => rec.month === monthStr)
         .forEach((rec) => {
           const studentId = rec.student?._id || rec.student;
-          newPaidMap[studentId] = rec.paid;
           newAmountMap[studentId] = rec.amount;
+          newPaidAmountMap[studentId] = rec.paidAmount || 0;
           newRecordIdMap[studentId] = rec._id;
         });
 
-      setPaidMap(newPaidMap);
       setAmountMap(newAmountMap);
+      setPaidAmountMap(newPaidAmountMap);
+      setOriginalAmountMap(newAmountMap);
+      setOriginalPaidAmountMap(newPaidAmountMap);
       setRecordIdMap(newRecordIdMap);
       setIsLoading(false);
     });
   }, [selectedGroup, selectedMonth]);
 
-  const togglePaid = (studentId) => {
-    setPaidMap((prev) => ({ ...prev, [studentId]: !prev[studentId] }));
-  };
-
   const setAmount = (studentId, value) => {
     setAmountMap((prev) => ({ ...prev, [studentId]: value }));
+  };
+
+  const setPaidAmount = (studentId, value) => {
+    setPaidAmountMap((prev) => ({ ...prev, [studentId]: value }));
   };
 
   const handleSave = async () => {
@@ -93,12 +135,20 @@ export default function MonthlyPayment() {
     setIsSaving(true);
     const monthStr = selectedMonth.format('YYYY-MM');
 
+    // Only touch students whose amount or paid amount actually changed —
+    // avoids creating/updating records for every student on every save.
+    const changedStudents = students.filter(
+      (student) =>
+        amountMap[student._id] !== originalAmountMap[student._id] ||
+        paidAmountMap[student._id] !== originalPaidAmountMap[student._id]
+    );
+
     await Promise.all(
-      students.map((student) => {
-        const paid = paidMap[student._id] || false;
+      changedStudents.map((student) => {
         const amount = amountMap[student._id] || 0;
+        const paidAmount = paidAmountMap[student._id] || 0;
         const existingId = recordIdMap[student._id];
-        const jsonData = { amount, paid, paidAt: paid ? new Date() : null };
+        const jsonData = { amount, paidAmount };
         if (existingId) {
           return request.update({ entity: 'monthlypayment', id: existingId, jsonData });
         }
@@ -109,8 +159,10 @@ export default function MonthlyPayment() {
       })
     );
 
+    setOriginalAmountMap(amountMap);
+    setOriginalPaidAmountMap(paidAmountMap);
     setIsSaving(false);
-    message.success("To'lovlar saqlandi");
+    message.success(changedStudents.length > 0 ? "To'lovlar saqlandi" : "O'zgarish yo'q edi");
   };
 
   const handleSendReminder = async () => {
@@ -122,26 +174,13 @@ export default function MonthlyPayment() {
     }
   };
 
-  const paidCount = students.filter((s) => paidMap[s._id]).length;
+  const remainingOf = (studentId) =>
+    (amountMap[studentId] || 0) - (paidAmountMap[studentId] || 0);
 
-  const AmountInput = ({ student }) => (
-    <InputNumber
-      min={0}
-      value={amountMap[student._id]}
-      onChange={(value) => setAmount(student._id, value)}
-      style={{ width: isMobile ? '100%' : 160 }}
-      addonAfter="so'm"
-    />
-  );
-
-  const PaidSwitch = ({ student }) => (
-    <Switch
-      checked={!!paidMap[student._id]}
-      checkedChildren={<CheckOutlined />}
-      unCheckedChildren={<CloseOutlined />}
-      onChange={() => togglePaid(student._id)}
-    />
-  );
+  const paidCount = students.filter((s) => remainingOf(s._id) <= 0).length;
+  const partialCount = students.filter(
+    (s) => remainingOf(s._id) > 0 && (paidAmountMap[s._id] || 0) > 0
+  ).length;
 
   const columns = [
     {
@@ -149,19 +188,41 @@ export default function MonthlyPayment() {
       dataIndex: 'name',
     },
     {
-      title: 'Summa',
+      title: 'Jami summa',
       dataIndex: '_id',
-      render: (_, student) => <AmountInput student={student} />,
+      render: (_, student) => (
+        <AmountInput
+          studentId={student._id}
+          amount={amountMap[student._id]}
+          onChange={setAmount}
+          isMobile={isMobile}
+        />
+      ),
     },
     {
-      title: "To'lov holati",
-      dataIndex: 'paid',
-      render: (_, student) => <PaidSwitch student={student} />,
+      title: "To'langan summa",
+      dataIndex: '_id',
+      render: (_, student) => (
+        <PaidAmountInput
+          studentId={student._id}
+          amount={amountMap[student._id]}
+          paidAmount={paidAmountMap[student._id]}
+          onChange={setPaidAmount}
+          isMobile={isMobile}
+        />
+      ),
+    },
+    {
+      title: 'Holat',
+      dataIndex: '_id',
+      render: (_, student) => (
+        <StatusTag amount={amountMap[student._id]} paidAmount={paidAmountMap[student._id]} />
+      ),
     },
   ];
 
   return (
-    <Card title="Oylik to'lovlar" bodyStyle={isMobile ? { padding: '12px' } : undefined}>
+    <Card title="Oylik to'lovlar" styles={{ body: isMobile ? { padding: '12px' } : undefined }}>
       <div
         style={{
           display: 'flex',
@@ -206,10 +267,13 @@ export default function MonthlyPayment() {
         {selectedGroup && students.length > 0 && (
           <Space wrap>
             <Tag color="green" style={{ fontSize: '14px', padding: '4px 10px' }}>
-              To'lagan: {paidCount}
+              To'langan: {paidCount}
+            </Tag>
+            <Tag color="orange" style={{ fontSize: '14px', padding: '4px 10px' }}>
+              Qisman: {partialCount}
             </Tag>
             <Tag color="red" style={{ fontSize: '14px', padding: '4px 10px' }}>
-              To'lamagan: {students.length - paidCount}
+              To'lanmagan: {students.length - paidCount - partialCount}
             </Tag>
           </Space>
         )}
@@ -227,10 +291,28 @@ export default function MonthlyPayment() {
               <div style={{ width: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <b>{student.name}</b>
-                  <PaidSwitch student={student} />
+                  <StatusTag amount={amountMap[student._id]} paidAmount={paidAmountMap[student._id]} />
                 </div>
-                <div style={{ marginTop: '8px' }}>
-                  <AmountInput student={student} />
+                <div style={{ marginTop: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#999' }}>Jami summa</div>
+                    <AmountInput
+                      studentId={student._id}
+                      amount={amountMap[student._id]}
+                      onChange={setAmount}
+                      isMobile={isMobile}
+                    />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#999' }}>To'langan summa</div>
+                    <PaidAmountInput
+                      studentId={student._id}
+                      amount={amountMap[student._id]}
+                      paidAmount={paidAmountMap[student._id]}
+                      onChange={setPaidAmount}
+                      isMobile={isMobile}
+                    />
+                  </div>
                 </div>
               </div>
             </List.Item>

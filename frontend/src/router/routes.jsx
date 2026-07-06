@@ -10,6 +10,7 @@ const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const Customer = lazy(() => import('@/pages/Customer'));
 const Parent = lazy(() => import('@/pages/Parent'));
 const Group = lazy(() => import('@/pages/Group'));
+const Staff = lazy(() => import('@/pages/Staff'));
 const Attendance = lazy(() => import('@/pages/Attendance'));
 const MonthlyPayment = lazy(() => import('@/pages/MonthlyPayment'));
 const PaymentHistory = lazy(() => import('@/pages/PaymentHistory'));
@@ -69,6 +70,10 @@ let routes = {
     {
       path: '/group',
       element: <Group />,
+    },
+    {
+      path: '/staff',
+      element: <Staff />,
     },
 
     {
