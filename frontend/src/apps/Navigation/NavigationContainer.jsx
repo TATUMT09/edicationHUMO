@@ -20,6 +20,8 @@ import {
   WalletOutlined,
   ScheduleOutlined,
   TeamOutlined,
+  TableOutlined,
+  BarChartOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -56,6 +58,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/attendance'}>{translate('attendance')}</Link>,
     },
     {
+      key: 'attendance-report',
+      icon: <TableOutlined />,
+      label: <Link to={'/attendance-report'}>{translate('attendance_report')}</Link>,
+    },
+    {
       key: 'monthly-payments',
       icon: <WalletOutlined />,
       label: <Link to={'/monthly-payments'}>{translate('monthly_payments')}</Link>,
@@ -64,6 +71,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'payment-history',
       icon: <FileOutlined />,
       label: <Link to={'/payment-history'}>{translate('payment_history')}</Link>,
+    },
+    {
+      key: 'payment-report',
+      icon: <BarChartOutlined />,
+      label: <Link to={'/payment-report'}>{translate('payment_report')}</Link>,
     },
     {
       key: 'customer',

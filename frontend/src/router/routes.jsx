@@ -12,8 +12,10 @@ const Parent = lazy(() => import('@/pages/Parent'));
 const Group = lazy(() => import('@/pages/Group'));
 const Staff = lazy(() => import('@/pages/Staff'));
 const Attendance = lazy(() => import('@/pages/Attendance'));
+const AttendanceReport = lazy(() => import('@/pages/Attendance/MonthlyReport'));
 const MonthlyPayment = lazy(() => import('@/pages/MonthlyPayment'));
 const PaymentHistory = lazy(() => import('@/pages/PaymentHistory'));
+const PaymentReport = lazy(() => import('@/pages/PaymentHistory/MonthlyReport'));
 const Invoice = lazy(() => import('@/pages/Invoice'));
 const InvoiceCreate = lazy(() => import('@/pages/Invoice/InvoiceCreate'));
 
@@ -52,12 +54,20 @@ let routes = {
       element: <Attendance />,
     },
     {
+      path: '/attendance-report',
+      element: <AttendanceReport />,
+    },
+    {
       path: '/monthly-payments',
       element: <MonthlyPayment />,
     },
     {
       path: '/payment-history',
       element: <PaymentHistory />,
+    },
+    {
+      path: '/payment-report',
+      element: <PaymentReport />,
     },
     {
       path: '/customer',
