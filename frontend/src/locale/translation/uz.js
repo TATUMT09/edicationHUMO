@@ -37,6 +37,8 @@ const lang = {
   Client: "O'quvchi",
   client_list: "O'quvchilar ro'yxati",
   add_new_client: "Yangi o'quvchi qo'shish",
+  school: 'Maktabi',
+  grade: 'Sinfi',
   group: 'Guruh',
   groups: 'Guruhlar',
   group_list: "Guruhlar ro'yxati",

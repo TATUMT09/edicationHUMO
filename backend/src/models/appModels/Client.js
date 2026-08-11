@@ -19,6 +19,8 @@ const schema = new mongoose.Schema({
   address: String,
   email: String,
   birthday: Date,
+  school: String,
+  grade: String,
   group: { type: mongoose.Schema.ObjectId, ref: 'Group', autopopulate: true },
   createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
   assigned: { type: mongoose.Schema.ObjectId, ref: 'Admin' },

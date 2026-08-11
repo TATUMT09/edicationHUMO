@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Statistic, Table, Tag, Button, Space, message, List } from 'antd';
 import {
   TeamOutlined,
@@ -15,6 +16,7 @@ import useResponsive from '@/hooks/useResponsive';
 
 export default function Dashboard() {
   const { isMobile } = useResponsive();
+  const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
   const [students, setStudents] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -131,7 +133,7 @@ export default function Dashboard() {
 
       <Row gutter={[16, 16]}>
         <Col xs={12} md={8} lg={4}>
-          <Card style={cardStyle} loading={isLoading}>
+          <Card style={cardStyle} loading={isLoading} hoverable onClick={() => navigate('/customer')}>
             <Statistic
               title="Jami o'quvchilar"
               value={totalStudents}
@@ -140,12 +142,17 @@ export default function Dashboard() {
           </Card>
         </Col>
         <Col xs={12} md={8} lg={4}>
-          <Card style={cardStyle} loading={isLoading}>
+          <Card style={cardStyle} loading={isLoading} hoverable onClick={() => navigate('/group')}>
             <Statistic title="Guruhlar" value={groups.length} prefix={<TeamOutlined />} />
           </Card>
         </Col>
         <Col xs={12} md={8} lg={4}>
-          <Card style={cardStyle} loading={isLoading}>
+          <Card
+            style={cardStyle}
+            loading={isLoading}
+            hoverable
+            onClick={() => navigate('/monthly-payments')}
+          >
             <Statistic
               title="Bu oy to'lagan"
               value={paidCount}
@@ -155,7 +162,12 @@ export default function Dashboard() {
           </Card>
         </Col>
         <Col xs={12} md={8} lg={4}>
-          <Card style={cardStyle} loading={isLoading}>
+          <Card
+            style={cardStyle}
+            loading={isLoading}
+            hoverable
+            onClick={() => navigate('/monthly-payments')}
+          >
             <Statistic
               title="Qisman to'lagan"
               value={partialCount}
@@ -165,7 +177,12 @@ export default function Dashboard() {
           </Card>
         </Col>
         <Col xs={12} md={8} lg={4}>
-          <Card style={cardStyle} loading={isLoading}>
+          <Card
+            style={cardStyle}
+            loading={isLoading}
+            hoverable
+            onClick={() => navigate('/monthly-payments')}
+          >
             <Statistic
               title="Bu oy to'lamagan"
               value={unpaidCount}
@@ -175,7 +192,12 @@ export default function Dashboard() {
           </Card>
         </Col>
         <Col xs={12} md={8} lg={4}>
-          <Card style={cardStyle} loading={isLoading}>
+          <Card
+            style={cardStyle}
+            loading={isLoading}
+            hoverable
+            onClick={() => navigate('/monthly-payments')}
+          >
             <Statistic
               title="Jami qarzdorlik"
               value={totalDebt}
@@ -185,7 +207,7 @@ export default function Dashboard() {
           </Card>
         </Col>
         <Col xs={12} md={8} lg={4}>
-          <Card style={cardStyle} loading={isLoading}>
+          <Card style={cardStyle} loading={isLoading} hoverable onClick={() => navigate('/attendance')}>
             <Statistic
               title="Bugun kelgan"
               value={presentToday}
@@ -195,7 +217,7 @@ export default function Dashboard() {
           </Card>
         </Col>
         <Col xs={12} md={8} lg={4}>
-          <Card style={cardStyle} loading={isLoading}>
+          <Card style={cardStyle} loading={isLoading} hoverable onClick={() => navigate('/attendance')}>
             <Statistic
               title="Bugun kelmagan"
               value={absentToday}

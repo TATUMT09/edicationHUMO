@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Select, Table, Card, Empty, Tag, Button, Space, Tooltip } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 
 import { request } from '@/request';
 import useResponsive from '@/hooks/useResponsive';
@@ -47,6 +48,7 @@ export default function PaymentReport() {
   const [students, setStudents] = useState([]);
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState(undefined);
 
   useEffect(() => {
     request.listAll({ entity: 'group' }).then((res) => {
@@ -55,6 +57,7 @@ export default function PaymentReport() {
   }, []);
 
   useEffect(() => {
+    setStatusFilter(undefined);
     if (!selectedGroup) {
       setStudents([]);
       setRecords([]);
@@ -84,6 +87,27 @@ export default function PaymentReport() {
     });
     return map;
   }, [records]);
+
+  // Missing record for the current month counts as unpaid — matches how the
+  // Dashboard and "Oylik to'lovlar" page treat a student nobody has charged yet.
+  const currentMonth = dayjs().format('YYYY-MM');
+  const currentStatus = (studentId) => paymentStatus(recordByStudentMonth[studentId]?.[currentMonth]) || 'unpaid';
+
+  const filteredStudents = statusFilter
+    ? students.filter((s) => currentStatus(s._id) === statusFilter)
+    : students;
+
+  const statusCounts = students.reduce(
+    (acc, s) => {
+      acc[currentStatus(s._id)] += 1;
+      return acc;
+    },
+    { paid: 0, partial: 0, unpaid: 0 }
+  );
+
+  const toggleStatusFilter = (status) => {
+    setStatusFilter((prev) => (prev === status ? undefined : status));
+  };
 
   const renderCell = (rec) => {
     const status = paymentStatus(rec);
@@ -151,9 +175,27 @@ export default function PaymentReport() {
         </Button>
         {selectedGroup && (
           <Space wrap>
-            <Tag color="green">✓ To'langan</Tag>
-            <Tag color="orange">½ Qisman</Tag>
-            <Tag color="red">✕ To'lanmagan</Tag>
+            {[
+              { status: 'paid', color: 'green', label: `✓ To'langan (${statusCounts.paid})` },
+              { status: 'partial', color: 'orange', label: `½ Qisman (${statusCounts.partial})` },
+              { status: 'unpaid', color: 'red', label: `✕ To'lanmagan (${statusCounts.unpaid})` },
+            ].map(({ status, color, label }) => (
+              <Tag.CheckableTag
+                key={status}
+                checked={statusFilter === status}
+                onChange={() => toggleStatusFilter(status)}
+                style={{
+                  border: `1px solid var(--ant-${color}-6, ${color})`,
+                  color: statusFilter === status ? '#fff' : undefined,
+                  backgroundColor:
+                    statusFilter === status
+                      ? { green: '#389e0d', orange: '#d48806', red: '#cf1322' }[color]
+                      : undefined,
+                }}
+              >
+                {label}
+              </Tag.CheckableTag>
+            ))}
           </Space>
         )}
       </Space>
@@ -166,7 +208,7 @@ export default function PaymentReport() {
         <Table
           rowKey="_id"
           columns={columns}
-          dataSource={students}
+          dataSource={filteredStudents}
           loading={isLoading}
           pagination={false}
           scroll={{ x: 'max-content' }}
