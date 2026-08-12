@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Select, DatePicker, Table, Card, Empty, Tag, Button, Space } from 'antd';
+import { Select, DatePicker, Table, Card, Empty, Tag, Button, Space, List } from 'antd';
 import { CheckOutlined, CloseOutlined, DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -85,6 +85,17 @@ export default function AttendanceReport() {
     const total = Object.keys(byDate).length;
     const present = Object.values(byDate).filter((s) => s === 'present').length;
     return { present, absent: total - present, total };
+  };
+
+  // On a narrow phone a 30-column grid buries the one thing that actually
+  // matters — which days a student was absent — behind horizontal scrolling.
+  // The mobile list surfaces those days directly instead.
+  const absentDays = (studentId) => {
+    const byDate = statusByStudentDate[studentId] || {};
+    return Object.entries(byDate)
+      .filter(([, status]) => status === 'absent')
+      .map(([date]) => dayjs(date).format('DD'))
+      .sort();
   };
 
   const renderCell = (status) => {
@@ -182,6 +193,48 @@ export default function AttendanceReport() {
         <Empty description="Guruhni tanlang" />
       ) : !isLoading && students.length === 0 ? (
         <Empty description="Bu guruhda o'quvchi topilmadi" />
+      ) : isMobile ? (
+        <List
+          bordered
+          loading={isLoading}
+          dataSource={students}
+          renderItem={(student) => {
+            const { present, total } = studentTotals(student._id);
+            const absent = absentDays(student._id);
+            const percent = total ? `${Math.round((present / total) * 100)}%` : '—';
+            return (
+              <List.Item key={student._id}>
+                <div style={{ width: '100%' }}>
+                  <div
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  >
+                    <b>{student.name}</b>
+                    <Space>
+                      <Tag color="blue">{`${present}/${total}`}</Tag>
+                      <Tag color={present === total && total > 0 ? 'green' : 'orange'}>{percent}</Tag>
+                    </Space>
+                  </div>
+                  <div style={{ marginTop: '6px' }}>
+                    {absent.length > 0 ? (
+                      <>
+                        <span style={{ color: '#cf1322' }}>Kelmagan kunlari: </span>
+                        {absent.map((d) => (
+                          <Tag color="red" key={d} style={{ marginBottom: '4px' }}>
+                            {d}
+                          </Tag>
+                        ))}
+                      </>
+                    ) : total > 0 ? (
+                      <span style={{ color: '#389e0d' }}>Barcha kunlarga keldi</span>
+                    ) : (
+                      <span style={{ color: '#bfbfbf' }}>Bu oyda davomat olinmagan</span>
+                    )}
+                  </div>
+                </div>
+              </List.Item>
+            );
+          }}
+        />
       ) : (
         <Table
           rowKey="_id"
