@@ -2,28 +2,18 @@ import { useEffect, useMemo, useState } from 'react';
 import { Select, DatePicker, Table, Card, Empty, Tag, Button, Space, List } from 'antd';
 import { CheckOutlined, CloseOutlined, DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import * as XLSX from 'xlsx';
 
 import { request } from '@/request';
 import useResponsive from '@/hooks/useResponsive';
 
-function csvCell(value) {
-  const str = String(value ?? '');
-  return /[;",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-}
-
-function downloadCsv(filename, rows) {
-  // Uzbek/Russian-locale Excel expects ";" as the field separator (comma is
-  // the decimal separator there), so a plain comma-CSV opens as one column.
-  // The "sep=;" hint line tells Excel explicitly, regardless of locale.
-  const csv = ['sep=;', ...rows.map((row) => row.map(csvCell).join(';'))].join('\r\n');
-  // Leading BOM so Excel opens the UTF-8 file with Uzbek/Cyrillic text intact.
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
+// A real .xlsx sidesteps CSV's locale-dependent delimiter ("," vs ";")
+// entirely — cells land in real columns no matter how Excel is configured.
+function downloadXlsx(filename, rows) {
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Davomat');
+  XLSX.writeFile(wb, filename);
 }
 
 export default function AttendanceReport() {
@@ -158,7 +148,7 @@ export default function AttendanceReport() {
       const percent = total ? `${Math.round((present / total) * 100)}%` : '';
       return [student.name, ...cells, present, total, percent];
     });
-    downloadCsv(`davomat_${groupName}_${monthPrefix}.csv`, [header, ...rows]);
+    downloadXlsx(`davomat_${groupName}_${monthPrefix}.xlsx`, [header, ...rows]);
   };
 
   return (

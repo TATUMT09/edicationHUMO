@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Select, Table, Card, Empty, Tag, Button, Space, Tooltip } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import * as XLSX from 'xlsx';
 
 import { request } from '@/request';
 import useResponsive from '@/hooks/useResponsive';
@@ -25,23 +26,13 @@ const STATUS_META = {
   unpaid: { color: 'red', label: "To'lanmagan" },
 };
 
-function csvCell(value) {
-  const str = String(value ?? '');
-  return /[;",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-}
-
-function downloadCsv(filename, rows) {
-  // Uzbek/Russian-locale Excel expects ";" as the field separator (comma is
-  // the decimal separator there), so a plain comma-CSV opens as one column.
-  // The "sep=;" hint line tells Excel explicitly, regardless of locale.
-  const csv = ['sep=;', ...rows.map((row) => row.map(csvCell).join(';'))].join('\r\n');
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
+// A real .xlsx sidesteps CSV's locale-dependent delimiter ("," vs ";")
+// entirely — cells land in real columns no matter how Excel is configured.
+function downloadXlsx(filename, rows) {
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "To'lovlar");
+  XLSX.writeFile(wb, filename);
 }
 
 export default function PaymentReport() {
@@ -151,7 +142,7 @@ export default function PaymentReport() {
       });
       return [student.name, ...cells];
     });
-    downloadCsv(`tolovlar_${groupName}.csv`, [header, ...rows]);
+    downloadXlsx(`tolovlar_${groupName}.xlsx`, [header, ...rows]);
   };
 
   return (
