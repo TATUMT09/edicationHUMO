@@ -30,11 +30,39 @@ export default function PaymentHistory() {
     Promise.all([
       request.listAll({ entity: 'group' }),
       request.listAll({ entity: 'monthlypayment' }),
-    ]).then(([groupsRes, paymentsRes]) => {
-      setGroups(groupsRes.success ? groupsRes.result : []);
+      request.listAll({ entity: 'client' }),
+    ]).then(([groupsRes, paymentsRes, studentsRes]) => {
+      const groupList = groupsRes.success ? groupsRes.result : [];
+      const students = studentsRes.success ? studentsRes.result : [];
+      setGroups(groupList);
+
       const list = paymentsRes.success ? paymentsRes.result : [];
-      list.sort((a, b) => new Date(b.updated) - new Date(a.updated));
-      setPayments(list);
+
+      // A student with no MonthlyPayment record yet for the current month is
+      // still "unpaid" (this mirrors the Dashboard/Oylik-to'lovlar default) —
+      // without a synthetic row here, "To'lanmagan" filtered to 0 results for
+      // any group nobody has been charged yet, even though the app treats
+      // them as owing money everywhere else.
+      const currentMonth = dayjs().format('YYYY-MM');
+      const hasCurrentRecord = new Set(
+        list.filter((p) => p.month === currentMonth).map((p) => p.student?._id || p.student)
+      );
+      const groupById = new Map(groupList.map((g) => [g._id, g]));
+      const virtualUnpaid = students
+        .filter((s) => !hasCurrentRecord.has(s._id))
+        .map((s) => ({
+          _id: `virtual-${s._id}`,
+          student: s,
+          group: s.group,
+          month: currentMonth,
+          amount: groupById.get(s.group?._id || s.group)?.monthlyFee || 0,
+          paidAmount: 0,
+          paidAt: null,
+        }));
+
+      const combined = [...list, ...virtualUnpaid];
+      combined.sort((a, b) => new Date(b.updated || 0) - new Date(a.updated || 0));
+      setPayments(combined);
       setIsLoading(false);
     });
   }, []);
