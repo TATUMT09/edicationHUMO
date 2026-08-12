@@ -57,13 +57,16 @@ export default function AttendanceReport() {
 
   const monthPrefix = selectedMonth.format('YYYY-MM');
 
-  // Columns are only the days a lesson was actually taken (i.e. has at least
-  // one Attendance record) — a group meeting 3x/week shouldn't render 30
-  // mostly-empty day columns for the month.
+  // Every calendar day of the selected month is a column, like a paper
+  // attendance register — days with no record yet just render as "—".
   const days = useMemo(() => {
-    const set = new Set(records.filter((r) => r.date.startsWith(monthPrefix)).map((r) => r.date));
-    return [...set].sort();
-  }, [records, monthPrefix]);
+    const daysInMonth = selectedMonth.daysInMonth();
+    const arr = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      arr.push(selectedMonth.date(d).format('YYYY-MM-DD'));
+    }
+    return arr;
+  }, [selectedMonth]);
 
   const statusByStudentDate = useMemo(() => {
     const map = {};
@@ -168,7 +171,7 @@ export default function AttendanceReport() {
         <Button
           icon={<DownloadOutlined />}
           onClick={handleExport}
-          disabled={!selectedGroup || days.length === 0}
+          disabled={!selectedGroup || students.length === 0}
           block={isMobile}
         >
           Excelga yuklab olish
@@ -177,8 +180,8 @@ export default function AttendanceReport() {
 
       {!selectedGroup ? (
         <Empty description="Guruhni tanlang" />
-      ) : !isLoading && days.length === 0 ? (
-        <Empty description="Bu oy uchun davomat yozuvlari topilmadi" />
+      ) : !isLoading && students.length === 0 ? (
+        <Empty description="Bu guruhda o'quvchi topilmadi" />
       ) : (
         <Table
           rowKey="_id"
