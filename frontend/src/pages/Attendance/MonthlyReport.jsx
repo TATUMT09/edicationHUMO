@@ -216,14 +216,9 @@ export default function AttendanceReport() {
                   </div>
                   <div style={{ marginTop: '6px' }}>
                     {absent.length > 0 ? (
-                      <>
-                        <span style={{ color: '#cf1322' }}>Kelmagan kunlari: </span>
-                        {absent.map((d) => (
-                          <Tag color="red" key={d} style={{ marginBottom: '4px' }}>
-                            {d}
-                          </Tag>
-                        ))}
-                      </>
+                      <span style={{ color: '#cf1322' }}>
+                        Kelmagan kunlari ({absent.length}): <b>{absent.join(', ')}</b>
+                      </span>
                     ) : total > 0 ? (
                       <span style={{ color: '#389e0d' }}>Barcha kunlarga keldi</span>
                     ) : (
