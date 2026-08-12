@@ -8,11 +8,14 @@ import useResponsive from '@/hooks/useResponsive';
 
 function csvCell(value) {
   const str = String(value ?? '');
-  return /[",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  return /[;",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 
 function downloadCsv(filename, rows) {
-  const csv = rows.map((row) => row.map(csvCell).join(',')).join('\r\n');
+  // Uzbek/Russian-locale Excel expects ";" as the field separator (comma is
+  // the decimal separator there), so a plain comma-CSV opens as one column.
+  // The "sep=;" hint line tells Excel explicitly, regardless of locale.
+  const csv = ['sep=;', ...rows.map((row) => row.map(csvCell).join(';'))].join('\r\n');
   // Leading BOM so Excel opens the UTF-8 file with Uzbek/Cyrillic text intact.
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
