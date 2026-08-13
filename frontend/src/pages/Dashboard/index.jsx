@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 
 import { request } from '@/request';
 import useResponsive from '@/hooks/useResponsive';
+import humoLogo from '@/style/images/humo-logo.jpg';
 
 export default function Dashboard() {
   const { isMobile } = useResponsive();
@@ -120,7 +121,21 @@ export default function Dashboard() {
   };
 
   return (
-    <div>
+    <div style={{ position: 'relative', minHeight: '80vh' }}>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url(${humoLogo})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          backgroundSize: 'min(480px, 70%)',
+          opacity: 0.06,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+      <div style={{ position: 'relative', zIndex: 1 }}>
       <Space wrap style={{ marginBottom: '20px' }}>
         <Button
           icon={<SendOutlined />}
@@ -269,6 +284,7 @@ export default function Dashboard() {
           />
         )}
       </Card>
+      </div>
     </div>
   );
 }
