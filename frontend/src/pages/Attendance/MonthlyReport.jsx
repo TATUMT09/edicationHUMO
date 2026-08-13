@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Select, DatePicker, Table, Card, Empty, Tag, Button, Space, List } from 'antd';
+import { Select, DatePicker, Table, Card, Empty, Tag, Button, Space } from 'antd';
 import { CheckOutlined, CloseOutlined, DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
@@ -80,17 +80,6 @@ export default function AttendanceReport() {
     return { present, absent: total - present, total };
   };
 
-  // On a narrow phone a 30-column grid buries the one thing that actually
-  // matters — which days a student was absent — behind horizontal scrolling.
-  // The mobile list surfaces those days directly instead.
-  const absentDays = (studentId) => {
-    const byDate = statusByStudentDate[studentId] || {};
-    return Object.entries(byDate)
-      .filter(([, status]) => status === 'absent')
-      .map(([date]) => dayjs(date).format('DD'))
-      .sort();
-  };
-
   const renderCell = (status) => {
     if (status === 'present') return <CheckOutlined style={{ color: '#389e0d' }} />;
     if (status === 'absent') return <CloseOutlined style={{ color: '#cf1322' }} />;
@@ -102,12 +91,13 @@ export default function AttendanceReport() {
       title: "O'quvchi",
       dataIndex: 'name',
       fixed: 'left',
-      width: 160,
+      width: isMobile ? 96 : 160,
+      ellipsis: true,
     },
     ...days.map((date) => ({
       title: dayjs(date).format('DD'),
       key: date,
-      width: 44,
+      width: isMobile ? 30 : 44,
       align: 'center',
       render: (_, student) => renderCell(statusByStudentDate[student._id]?.[date]),
     })),
@@ -115,7 +105,7 @@ export default function AttendanceReport() {
       title: 'Keldi',
       key: 'present',
       fixed: 'right',
-      width: 80,
+      width: isMobile ? 58 : 80,
       align: 'center',
       render: (_, student) => {
         const { present, total } = studentTotals(student._id);
@@ -126,7 +116,7 @@ export default function AttendanceReport() {
       title: 'Foiz',
       key: 'percent',
       fixed: 'right',
-      width: 70,
+      width: isMobile ? 52 : 70,
       align: 'center',
       render: (_, student) => {
         const { present, total } = studentTotals(student._id);
@@ -186,43 +176,6 @@ export default function AttendanceReport() {
         <Empty description="Guruhni tanlang" />
       ) : !isLoading && students.length === 0 ? (
         <Empty description="Bu guruhda o'quvchi topilmadi" />
-      ) : isMobile ? (
-        <List
-          bordered
-          loading={isLoading}
-          dataSource={students}
-          renderItem={(student) => {
-            const { present, total } = studentTotals(student._id);
-            const absent = absentDays(student._id);
-            const percent = total ? `${Math.round((present / total) * 100)}%` : '—';
-            return (
-              <List.Item key={student._id}>
-                <div style={{ width: '100%' }}>
-                  <div
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
-                    <b>{student.name}</b>
-                    <Space>
-                      <Tag color="blue">{`${present}/${total}`}</Tag>
-                      <Tag color={present === total && total > 0 ? 'green' : 'orange'}>{percent}</Tag>
-                    </Space>
-                  </div>
-                  <div style={{ marginTop: '6px' }}>
-                    {absent.length > 0 ? (
-                      <span style={{ color: '#cf1322' }}>
-                        Kelmagan kunlari ({absent.length}): <b>{absent.join(', ')}</b>
-                      </span>
-                    ) : total > 0 ? (
-                      <span style={{ color: '#389e0d' }}>Barcha kunlarga keldi</span>
-                    ) : (
-                      <span style={{ color: '#bfbfbf' }}>Bu oyda davomat olinmagan</span>
-                    )}
-                  </div>
-                </div>
-              </List.Item>
-            );
-          }}
-        />
       ) : (
         <Table
           rowKey="_id"
@@ -230,6 +183,7 @@ export default function AttendanceReport() {
           dataSource={students}
           loading={isLoading}
           pagination={false}
+          size={isMobile ? 'small' : 'middle'}
           scroll={{ x: 'max-content' }}
         />
       )}

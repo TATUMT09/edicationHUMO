@@ -121,12 +121,13 @@ export default function PaymentReport() {
       title: "O'quvchi",
       dataIndex: 'name',
       fixed: 'left',
-      width: 160,
+      width: isMobile ? 96 : 160,
+      ellipsis: true,
     },
     ...months.map((month) => ({
       title: month,
       key: month,
-      width: 70,
+      width: isMobile ? 54 : 70,
       align: 'center',
       render: (_, student) => renderCell(recordByStudentMonth[student._id]?.[month]),
     })),
@@ -205,6 +206,7 @@ export default function PaymentReport() {
           dataSource={filteredStudents}
           loading={isLoading}
           pagination={false}
+          size={isMobile ? 'small' : 'middle'}
           scroll={{ x: 'max-content' }}
         />
       )}
