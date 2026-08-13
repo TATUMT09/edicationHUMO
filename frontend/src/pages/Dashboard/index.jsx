@@ -124,12 +124,12 @@ export default function Dashboard() {
     <div style={{ position: 'relative', minHeight: '80vh' }}>
       <div
         style={{
-          position: 'absolute',
+          position: 'fixed',
           inset: 0,
           backgroundImage: `url(${humoLogo})`,
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
-          backgroundSize: 'min(480px, 70%)',
+          backgroundSize: 'min(480px, 70vw)',
           opacity: 0.06,
           pointerEvents: 'none',
           zIndex: 0,
