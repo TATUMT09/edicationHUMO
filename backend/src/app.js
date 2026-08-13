@@ -27,6 +27,18 @@ app.use(
 
 app.use(cookieParser());
 app.use(express.json());
+// A malformed JSON body throws here, before any route runs — without this it
+// falls through to the generic 500 handler instead of a client-error 400.
+app.use((error, req, res, next) => {
+  if (error?.type === 'entity.parse.failed' || error instanceof SyntaxError) {
+    return res.status(400).json({
+      success: false,
+      result: null,
+      message: 'Invalid JSON in request body.',
+    });
+  }
+  next(error);
+});
 app.use(express.urlencoded({ extended: true }));
 
 app.use(compression());

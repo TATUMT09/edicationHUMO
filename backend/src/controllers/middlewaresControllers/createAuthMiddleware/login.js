@@ -22,7 +22,6 @@ const login = async (req, res, { userModel }) => {
     return res.status(409).json({
       success: false,
       result: null,
-      error: error,
       message: 'Invalid/Missing credentials.',
       errorMessage: error.message,
     });
@@ -30,12 +29,13 @@ const login = async (req, res, { userModel }) => {
 
   const user = await UserModel.findOne({ email: email, removed: false });
 
-  // console.log(user);
+  // Same status/message as a wrong password (see authUser.js) — an attacker
+  // must not be able to tell "no such account" apart from "wrong password".
   if (!user)
-    return res.status(404).json({
+    return res.status(403).json({
       success: false,
       result: null,
-      message: 'No account with this email has been registered.',
+      message: 'Invalid credentials.',
     });
 
   const databasePassword = await UserPasswordModel.findOne({ user: user._id, removed: false });

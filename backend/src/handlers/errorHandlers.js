@@ -6,6 +6,12 @@
   catchErrors(), catch any errors they throw, and pass it along to our express middleware with next()
 */
 
+// Only the error name ever reaches the client (the frontend uses it to spot
+// JsonWebTokenError and force a logout) — never the full error object, since
+// e.g. a Joi ValidationError carries `_original`, the raw request body
+// (passwords included) that was being validated.
+const safeError = (error) => (error?.name ? { name: error.name } : undefined);
+
 exports.catchErrors = (fn) => {
   return function (req, res, next) {
     return fn(req, res, next).catch((error) => {
@@ -15,7 +21,7 @@ exports.catchErrors = (fn) => {
           result: null,
           message: 'Required fields are not supplied',
           controller: fn.name,
-          error: error,
+          error: safeError(error),
         });
       } else {
         // Server Error
@@ -24,7 +30,7 @@ exports.catchErrors = (fn) => {
           result: null,
           message: error.message,
           controller: fn.name,
-          error: error,
+          error: safeError(error),
         });
       }
     });
@@ -59,7 +65,7 @@ exports.developmentErrors = (error, req, res, next) => {
   return res.status(500).json({
     success: false,
     message: error.message,
-    error: error,
+    error: safeError(error),
   });
 };
 
@@ -72,6 +78,6 @@ exports.productionErrors = (error, req, res, next) => {
   return res.status(500).json({
     success: false,
     message: error.message,
-    error: error,
+    error: safeError(error),
   });
 };

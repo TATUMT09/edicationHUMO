@@ -61,7 +61,9 @@ const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SE
       success: false,
       result: null,
       message: error.message,
-      error: error,
+      // Only the name is exposed (the frontend matches on
+      // JsonWebTokenError to force a logout) — never the full error object.
+      error: error?.name ? { name: error.name } : undefined,
       controller: 'isValidAuthToken',
       jwtExpired: true,
     });
