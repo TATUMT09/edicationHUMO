@@ -22,6 +22,7 @@ import {
   TeamOutlined,
   TableOutlined,
   BarChartOutlined,
+  RobotOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -51,6 +52,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'dashboard',
       icon: <DashboardOutlined />,
       label: <Link to={'/'}>{translate('dashboard')}</Link>,
+    },
+    {
+      key: 'assistant',
+      icon: <RobotOutlined />,
+      label: <Link to={'/assistant'}>{translate('assistant')}</Link>,
     },
     {
       key: 'attendance',

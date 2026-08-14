@@ -31,6 +31,7 @@ const lang = {
 
   // Nav / general
   dashboard: 'Boshqaruv paneli',
+  assistant: 'AI Yordamchi',
   customers: "O'quvchilar",
   Customers: "O'quvchilar",
   client: "O'quvchi",

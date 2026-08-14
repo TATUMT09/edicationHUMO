@@ -8,6 +8,7 @@ const adminController = require('@/controllers/coreControllers/adminController')
 const settingController = require('@/controllers/coreControllers/settingController');
 const notifyController = require('@/controllers/coreControllers/notifyController');
 const staffController = require('@/controllers/coreControllers/staffController');
+const assistantController = require('@/controllers/coreControllers/assistantController');
 
 const { singleStorageUpload } = require('@/middlewares/uploadMiddleware');
 
@@ -55,6 +56,9 @@ router.route('/setting/updateManySetting').patch(catchErrors(settingController.u
 // //____________________________________________ API for Telegram bot notifications _____
 router.route('/notify/unpaid-reminder').post(catchErrors(notifyController.unpaidReminder));
 router.route('/notify/attendance-status').post(catchErrors(notifyController.attendanceStatus));
+
+// //____________________________________________ API for AI Assistant _________________
+router.route('/assistant/ask').post(catchErrors(assistantController.ask));
 
 // //____________________________________________ API for Staff (teachers) management _____
 router.route('/staff/list').get(catchErrors(staffController.list));

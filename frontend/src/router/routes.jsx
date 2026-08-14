@@ -13,6 +13,7 @@ const Group = lazy(() => import('@/pages/Group'));
 const Staff = lazy(() => import('@/pages/Staff'));
 const Attendance = lazy(() => import('@/pages/Attendance'));
 const AttendanceReport = lazy(() => import('@/pages/Attendance/MonthlyReport'));
+const Assistant = lazy(() => import('@/pages/Assistant'));
 const MonthlyPayment = lazy(() => import('@/pages/MonthlyPayment'));
 const PaymentHistory = lazy(() => import('@/pages/PaymentHistory'));
 const PaymentReport = lazy(() => import('@/pages/PaymentHistory/MonthlyReport'));
@@ -56,6 +57,10 @@ let routes = {
     {
       path: '/attendance-report',
       element: <AttendanceReport />,
+    },
+    {
+      path: '/assistant',
+      element: <Assistant />,
     },
     {
       path: '/monthly-payments',
