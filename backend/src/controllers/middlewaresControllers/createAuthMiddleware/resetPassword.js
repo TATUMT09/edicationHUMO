@@ -1,113 +1,85 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const Joi = require('joi');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-
 const shortid = require('shortid');
 
 const resetPassword = async (req, res, { userModel }) => {
   const UserPassword = mongoose.model(userModel + 'Password');
   const User = mongoose.model(userModel);
-  const { password, userId, resetToken } = req.body;
+  const { email, resetToken, password } = req.body;
 
-  const databasePassword = await UserPassword.findOne({ user: userId, removed: false });
-  const user = await User.findOne({ _id: userId, removed: false }).exec();
-
-  if (!user.enabled)
+  const objectSchema = Joi.object({
+    email: Joi.string()
+      .email({ tlds: { allow: true } })
+      .required(),
+    resetToken: Joi.string().required(),
+    password: Joi.string().min(6).required(),
+  });
+  const { error } = objectSchema.validate({ email, resetToken, password });
+  if (error) {
     return res.status(409).json({
       success: false,
       result: null,
-      message: 'Your account is disabled, contact your account adminstrator',
+      message: 'Invalid reset password object',
+      errorMessage: error.message,
     });
+  }
 
-  if (!databasePassword || !user)
+  const user = await User.findOne({ email: email.toLowerCase().trim(), removed: false });
+  if (!user)
     return res.status(404).json({
       success: false,
       result: null,
       message: 'No account with this email has been registered.',
     });
 
-  const isMatch = resetToken === databasePassword.resetToken;
-  if (!isMatch || databasePassword.resetToken === undefined || databasePassword.resetToken === null)
+  const userPassword = await UserPassword.findOne({ user: user._id, removed: false });
+
+  const isExpired =
+    !userPassword?.resetTokenExpires || userPassword.resetTokenExpires < new Date();
+  const isMatch = !!userPassword?.resetToken && resetToken === userPassword.resetToken;
+
+  if (!isMatch || isExpired)
     return res.status(403).json({
       success: false,
       result: null,
-      message: 'Invalid reset token',
+      message: isExpired
+        ? "Sessiya muddati tugagan, qaytadan kod so'rang."
+        : "Token noto'g'ri, qaytadan kod so'rang.",
     });
-
-  // validate
-  const objectSchema = Joi.object({
-    password: Joi.string().required(),
-    userId: Joi.string().required(),
-    resetToken: Joi.string().required(),
-  });
-
-  const { error, value } = objectSchema.validate({ password, userId, resetToken });
-  if (error) {
-    return res.status(409).json({
-      success: false,
-      result: null,
-      error: error,
-      message: 'Invalid reset password object',
-      errorMessage: error.message,
-    });
-  }
 
   const salt = shortid.generate();
   const hashedPassword = bcrypt.hashSync(salt + password);
-  const emailToken = shortid.generate();
-
-  const token = jwt.sign(
-    {
-      id: userId,
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: '24h' }
-  );
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
   await UserPassword.findOneAndUpdate(
-    { user: userId },
+    { user: user._id },
     {
       $push: { loggedSessions: token },
       password: hashedPassword,
-      salt: salt,
-      emailToken: emailToken,
-      resetToken: shortid.generate(),
+      salt,
+      resetToken: null,
+      resetTokenExpires: null,
       emailVerified: true,
     },
-    {
-      new: true,
-    }
+    { new: true }
   ).exec();
 
-  if (
-    resetToken === databasePassword.resetToken &&
-    databasePassword.resetToken !== undefined &&
-    databasePassword.resetToken !== null
-  )
-    //  .cookie(`token_${user.cloud}`, token, {
-    //       maxAge: 24 * 60 * 60 * 1000,
-    //       sameSite: 'None',
-    //       httpOnly: true,
-    //       secure: true,
-    //       domain: req.hostname,
-    //       path: '/',
-    //       Partitioned: true,
-    //     })
-    return res.status(200).json({
-      success: true,
-      result: {
-        _id: user._id,
-        name: user.name,
-        surname: user.surname,
-        role: user.role,
-        email: user.email,
-        photo: user.photo,
-        token: token,
-        maxAge: req.body.remember ? 365 : null,
-      },
-      message: 'Successfully resetPassword user',
-    });
+  return res.status(200).json({
+    success: true,
+    result: {
+      _id: user._id,
+      name: user.name,
+      surname: user.surname,
+      role: user.role,
+      email: user.email,
+      photo: user.photo,
+      token,
+      maxAge: req.body.remember ? 365 : null,
+    },
+    message: 'Parol muvaffaqiyatli yangilandi.',
+  });
 };
 
 module.exports = resetPassword;

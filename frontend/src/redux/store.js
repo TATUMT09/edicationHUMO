@@ -12,9 +12,20 @@ const AUTH_INITIAL_STATE = {
   isSuccess: false,
 };
 
-const auth_state = storePersist.get('auth') ? storePersist.get('auth') : AUTH_INITIAL_STATE;
+const PORTAL_AUTH_INITIAL_STATE = {
+  current: {},
+  isLoggedIn: false,
+  isLoading: false,
+  isSuccess: false,
+  pendingVerificationEmail: null,
+};
 
-const initialState = { auth: auth_state };
+const auth_state = storePersist.get('auth') ? storePersist.get('auth') : AUTH_INITIAL_STATE;
+const portalAuth_state = storePersist.get('portal_auth')
+  ? storePersist.get('portal_auth')
+  : PORTAL_AUTH_INITIAL_STATE;
+
+const initialState = { auth: auth_state, portalAuth: portalAuth_state };
 
 const store = configureStore({
   reducer: rootReducer,

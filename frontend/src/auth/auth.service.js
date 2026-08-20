@@ -64,6 +64,25 @@ export const verify = async ({ userId, emailToken }) => {
   }
 };
 
+export const verifyResetCode = async ({ email, code }) => {
+  try {
+    const response = await axios.post(API_BASE_URL + `verify-reset-code`, { email, code });
+
+    const { status, data } = response;
+
+    successHandler(
+      { data, status },
+      {
+        notifyOnSuccess: false,
+        notifyOnFailed: true,
+      }
+    );
+    return data;
+  } catch (error) {
+    return errorHandler(error);
+  }
+};
+
 export const resetPassword = async ({ resetPasswordData }) => {
   try {
     const response = await axios.post(API_BASE_URL + `resetpassword`, resetPasswordData);

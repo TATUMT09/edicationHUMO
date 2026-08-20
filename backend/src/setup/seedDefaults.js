@@ -9,6 +9,8 @@ const DEFAULT_ADMINS = [
 ];
 const DEFAULT_PASSWORD = 'AD0187221';
 
+const DEFAULT_SUBJECTS = ['Matematika', 'Biologiya', 'SAT', 'Kimyo', 'Huquq', 'Ingliz tili'];
+
 // Creates the default admin accounts and settings the first time the app
 // connects to an empty database (fresh install / fresh deployment), so a
 // production server is usable without manually running `npm run setup`.
@@ -56,6 +58,23 @@ async function seedDefaults() {
       await Setting.insertMany(settingFiles);
       console.log('👍 Default settings created');
     }
+  }
+
+  const Subject = require('@/models/appModels/Subject');
+  const subjectCount = await Subject.countDocuments();
+  if (subjectCount === 0) {
+    await Subject.insertMany(
+      DEFAULT_SUBJECTS.map((name, index) => ({
+        name,
+        slug: name
+          .toLowerCase()
+          .replace(/['`]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, ''),
+        order: index,
+      }))
+    );
+    console.log('👍 Default subjects created');
   }
 }
 

@@ -11,6 +11,10 @@ const coreDownloadRouter = require('./routes/coreRoutes/coreDownloadRouter');
 const corePublicRouter = require('./routes/coreRoutes/corePublicRouter');
 const adminAuth = require('./controllers/coreControllers/adminAuth');
 
+const portalAuthRouter = require('./routes/portalRoutes/portalAuth');
+const portalApiRouter = require('./routes/portalRoutes/portalApi');
+const studentAuth = require('./controllers/portalControllers/studentAuth');
+
 const errorHandlers = require('./handlers/errorHandlers');
 const erpApiRouter = require('./routes/appRoutes/appApi');
 
@@ -49,6 +53,11 @@ app.use(compression());
 // Here our API Routes
 
 app.use('/api', coreAuthRouter);
+// Student ("portal") routes must be mounted before the blanket Admin gate
+// below — that gate matches every /api/* path (including /api/portal/*)
+// and would 401 these requests if registered after it.
+app.use('/api/portal', portalAuthRouter);
+app.use('/api/portal', studentAuth.isValidAuthToken, portalApiRouter);
 app.use('/api', adminAuth.isValidAuthToken, coreApiRouter);
 app.use('/api', adminAuth.isValidAuthToken, erpApiRouter);
 app.use('/download', coreDownloadRouter);

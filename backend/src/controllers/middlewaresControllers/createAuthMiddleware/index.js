@@ -2,6 +2,7 @@ const isValidAuthToken = require('./isValidAuthToken');
 const login = require('./login');
 const logout = require('./logout');
 const forgetPassword = require('./forgetPassword');
+const verifyResetCode = require('./verifyResetCode');
 const resetPassword = require('./resetPassword');
 
 const createAuthMiddleware = (userModel) => {
@@ -19,6 +20,11 @@ const createAuthMiddleware = (userModel) => {
 
   authMethods.forgetPassword = (req, res) =>
     forgetPassword(req, res, {
+      userModel,
+    });
+
+  authMethods.verifyResetCode = (req, res) =>
+    verifyResetCode(req, res, {
       userModel,
     });
 

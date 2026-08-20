@@ -1,0 +1,148 @@
+import portalAxios from './portalAxios';
+import portalErrorHandler from './portalErrorHandler';
+import successHandler from './successHandler';
+
+const portalRequest = {
+  register: async ({ name, email, password }) => {
+    try {
+      const response = await portalAxios.post('register', { name, email, password });
+      successHandler(response, { notifyOnSuccess: true, notifyOnFailed: true });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  verifyCode: async ({ email, code }) => {
+    try {
+      const response = await portalAxios.post('verify-code', { email, code });
+      successHandler(response, { notifyOnSuccess: true, notifyOnFailed: true });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  resendCode: async ({ email }) => {
+    try {
+      const response = await portalAxios.post('resend-code', { email });
+      successHandler(response, { notifyOnSuccess: true, notifyOnFailed: true });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  login: async ({ email, password }) => {
+    try {
+      const response = await portalAxios.post('login', { email, password });
+      successHandler(response, { notifyOnSuccess: false, notifyOnFailed: true });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  forgetPassword: async ({ email }) => {
+    try {
+      const response = await portalAxios.post('forgetpassword', { email });
+      successHandler(response, { notifyOnSuccess: true, notifyOnFailed: true });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  verifyResetCode: async ({ email, code }) => {
+    try {
+      const response = await portalAxios.post('verify-reset-code', { email, code });
+      successHandler(response, { notifyOnSuccess: false, notifyOnFailed: true });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  resetPassword: async ({ email, resetToken, password }) => {
+    try {
+      const response = await portalAxios.post('resetpassword', { email, resetToken, password });
+      successHandler(response, { notifyOnSuccess: true, notifyOnFailed: true });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  logout: async () => {
+    try {
+      const response = await portalAxios.post('logout');
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+
+  getSubjects: async () => {
+    try {
+      const response = await portalAxios.get('subjects');
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getContent: async (subjectId, { level, type } = {}) => {
+    try {
+      const params = {};
+      if (level) params.level = level;
+      if (type) params.type = type;
+      const response = await portalAxios.get(`subjects/${subjectId}/content`, { params });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getVideo: async (videoId) => {
+    try {
+      const response = await portalAxios.get(`videos/${videoId}`);
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getTestToTake: async (testId) => {
+    try {
+      const response = await portalAxios.get(`tests/${testId}/take`);
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  submitAttempt: async (testId, answers) => {
+    try {
+      const response = await portalAxios.post(`tests/${testId}/attempts`, { answers });
+      successHandler(response, { notifyOnSuccess: false, notifyOnFailed: true });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getMyAttempts: async () => {
+    try {
+      const response = await portalAxios.get('attempts');
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getAttempt: async (attemptId) => {
+    try {
+      const response = await portalAxios.get(`attempts/${attemptId}`);
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getStatsSummary: async () => {
+    try {
+      const response = await portalAxios.get('stats/summary');
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+};
+
+export default portalRequest;

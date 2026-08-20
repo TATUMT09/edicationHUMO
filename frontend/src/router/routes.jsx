@@ -24,6 +24,11 @@ const InvoiceRead = lazy(() => import('@/pages/Invoice/InvoiceRead'));
 const InvoiceUpdate = lazy(() => import('@/pages/Invoice/InvoiceUpdate'));
 const InvoiceRecordPayment = lazy(() => import('@/pages/Invoice/InvoiceRecordPayment'));
 
+const Subject = lazy(() => import('@/pages/Subject'));
+const Test = lazy(() => import('@/pages/Test'));
+const Question = lazy(() => import('@/pages/Question'));
+const VideoLesson = lazy(() => import('@/pages/VideoLesson'));
+
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
 
 
@@ -89,6 +94,23 @@ let routes = {
     {
       path: '/staff',
       element: <Staff />,
+    },
+
+    {
+      path: '/subject',
+      element: <Subject />,
+    },
+    {
+      path: '/test',
+      element: <Test />,
+    },
+    {
+      path: '/question',
+      element: <Question />,
+    },
+    {
+      path: '/video-lesson',
+      element: <VideoLesson />,
     },
 
     {

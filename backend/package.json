@@ -38,6 +38,7 @@
     "node-cache": "^5.1.2",
     "node-cron": "^4.5.0",
     "node-telegram-bot-api": "^1.1.2",
+    "nodemailer": "^6.10.1",
     "openai": "^4.27.0",
     "phantomjs-prebuilt": "^2.1.16",
     "pug": "^3.0.2",

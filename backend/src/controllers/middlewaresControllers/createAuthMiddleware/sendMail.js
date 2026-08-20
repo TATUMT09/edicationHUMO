@@ -1,26 +1,40 @@
-const { passwordVerfication } = require('@/emailTemplate/emailVerfication');
+const nodemailer = require('nodemailer');
 
-const { Resend } = require('resend');
+const { passwordVerfication, emailVerificationCode } = require('@/emailTemplate/emailVerfication');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
 
 const sendMail = async ({
   email,
   name,
   link,
+  code,
   idurar_app_email,
   subject = 'Verify your email | idurar',
   type = 'emailVerfication',
   emailToken,
 }) => {
-  const resend = new Resend(process.env.RESEND_API);
+  const fromEmail = process.env.EMAIL_USER || idurar_app_email;
 
-  const { data } = await resend.emails.send({
-    from: idurar_app_email,
+  const html =
+    type === 'emailVerificationCode'
+      ? emailVerificationCode({ name, code })
+      : passwordVerfication({ name, link });
+
+  const info = await transporter.sendMail({
+    from: `"HUMO Education" <${fromEmail}>`,
     to: email,
     subject,
-    html: passwordVerfication({ name, link }),
+    html,
   });
 
-  return data;
+  return info;
 };
 
 module.exports = sendMail;

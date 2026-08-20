@@ -18,7 +18,6 @@ const AdminPasswordSchema = new Schema({
     required: true,
   },
   emailToken: String,
-  resetToken: String,
   emailVerified: {
     type: Boolean,
     default: false,
@@ -31,6 +30,16 @@ const AdminPasswordSchema = new Schema({
     type: [String],
     default: [],
   },
+
+  resetCode: String,
+  resetCodeExpires: Date,
+  resetCodeAttempts: {
+    type: Number,
+    default: 0,
+  },
+
+  resetToken: String,
+  resetTokenExpires: Date,
 });
 
 // AdminPasswordSchema.index({ user: 1 });

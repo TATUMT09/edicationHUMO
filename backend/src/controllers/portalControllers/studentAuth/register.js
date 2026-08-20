@@ -1,0 +1,85 @@
+const Joi = require('joi');
+const mongoose = require('mongoose');
+const { generate: uniqueId } = require('shortid');
+
+const generateCode = require('@/utils/generateCode');
+const sendMail = require('@/controllers/middlewaresControllers/createAuthMiddleware/sendMail');
+
+const register = async (req, res) => {
+  const Student = mongoose.model('Student');
+  const StudentPassword = mongoose.model('StudentPassword');
+
+  const { name, email, password } = req.body;
+
+  const objectSchema = Joi.object({
+    name: Joi.string().required(),
+    email: Joi.string()
+      .email({ tlds: { allow: true } })
+      .required(),
+    password: Joi.string().min(6).required(),
+  });
+
+  const { error } = objectSchema.validate({ name, email, password });
+  if (error) {
+    return res.status(409).json({
+      success: false,
+      result: null,
+      message: "Ism, email va parol (kamida 6 belgi) to'g'ri kiritilishi shart.",
+      errorMessage: error.message,
+    });
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  let student = await Student.findOne({ email: normalizedEmail, removed: false });
+
+  if (student) {
+    const existingPassword = await StudentPassword.findOne({ user: student._id, removed: false });
+    if (existingPassword?.emailVerified) {
+      return res.status(409).json({
+        success: false,
+        result: null,
+        message: "Bu email bilan hisob allaqachon ro'yxatdan o'tgan. Kirish sahifasidan foydalaning.",
+      });
+    }
+    student.name = name;
+    await student.save();
+  } else {
+    student = await new Student({ name, email: normalizedEmail }).save();
+  }
+
+  const salt = uniqueId();
+  const tmp = new StudentPassword();
+  const passwordHash = tmp.generateHash(salt, password);
+  const { code, expires } = generateCode();
+
+  await StudentPassword.findOneAndUpdate(
+    { user: student._id },
+    {
+      user: student._id,
+      password: passwordHash,
+      salt,
+      emailVerified: false,
+      emailVerificationCode: code,
+      emailVerificationCodeExpires: expires,
+      emailVerificationAttempts: 0,
+      lastCodeSentAt: new Date(),
+    },
+    { upsert: true, new: true }
+  ).exec();
+
+  await sendMail({
+    email: normalizedEmail,
+    name,
+    code,
+    subject: 'HUMO Education - tasdiqlash kodi',
+    type: 'emailVerificationCode',
+  });
+
+  return res.status(200).json({
+    success: true,
+    result: { email: normalizedEmail },
+    message: 'Tasdiqlash kodi emailingizga yuborildi.',
+  });
+};
+
+module.exports = register;

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Form, Result, Button } from 'antd';
@@ -17,12 +18,14 @@ const ForgetPassword = () => {
   const navigate = useNavigate();
 
   const { onFetch, isSuccess, isLoading } = useOnFetch();
+  const [submittedEmail, setSubmittedEmail] = useState('');
 
   async function postData(data) {
     return await request.post({ entity: 'forgetpassword', jsonData: data });
   }
 
   const onFinish = (values) => {
+    setSubmittedEmail(values.email);
     const callback = postData(values);
     onFetch(callback);
   };
@@ -62,10 +65,10 @@ const ForgetPassword = () => {
           <Button
             type="primary"
             onClick={() => {
-              navigate(`/login`);
+              navigate('/resetpassword', { state: { email: submittedEmail } });
             }}
           >
-            {translate('Login')}
+            Kodni kiritish
           </Button>
         }
       ></Result>

@@ -23,6 +23,10 @@ import {
   TableOutlined,
   BarChartOutlined,
   RobotOutlined,
+  BookOutlined,
+  FileTextOutlined,
+  QuestionCircleOutlined,
+  PlayCircleOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -102,6 +106,26 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'staff',
       icon: <TeamOutlined />,
       label: <Link to={'/staff'}>{translate('staff')}</Link>,
+    },
+    {
+      key: 'subject',
+      icon: <BookOutlined />,
+      label: <Link to={'/subject'}>{translate('subjects')}</Link>,
+    },
+    {
+      key: 'test',
+      icon: <FileTextOutlined />,
+      label: <Link to={'/test'}>{translate('tests')}</Link>,
+    },
+    {
+      key: 'question',
+      icon: <QuestionCircleOutlined />,
+      label: <Link to={'/question'}>{translate('questions')}</Link>,
+    },
+    {
+      key: 'video-lesson',
+      icon: <PlayCircleOutlined />,
+      label: <Link to={'/video-lesson'}>{translate('video_lessons')}</Link>,
     },
   ].filter(Boolean);
 

@@ -2,12 +2,8 @@ const Joi = require('joi');
 
 const mongoose = require('mongoose');
 
-const checkAndCorrectURL = require('./checkAndCorrectURL');
+const generateCode = require('@/utils/generateCode');
 const sendMail = require('./sendMail');
-const shortid = require('shortid');
-const { loadSettings } = require('@/middlewares/settings');
-
-const { useAppSettings } = require('@/settings');
 
 const forgetPassword = async (req, res, { userModel }) => {
   const UserPassword = mongoose.model(userModel + 'Password');
@@ -26,16 +22,13 @@ const forgetPassword = async (req, res, { userModel }) => {
     return res.status(409).json({
       success: false,
       result: null,
-      error: error,
       message: 'Invalid email.',
       errorMessage: error.message,
     });
   }
 
-  const user = await User.findOne({ email: email, removed: false });
-  const databasePassword = await UserPassword.findOne({ user: user._id, removed: false });
+  const user = await User.findOne({ email: email.toLowerCase().trim(), removed: false });
 
-  // console.log(user);
   if (!user)
     return res.status(404).json({
       success: false,
@@ -43,36 +36,33 @@ const forgetPassword = async (req, res, { userModel }) => {
       message: 'No account with this email has been registered.',
     });
 
-  const resetToken = shortid.generate();
+  if (!user.enabled)
+    return res.status(409).json({
+      success: false,
+      result: null,
+      message: 'Your account is disabled, contact your account adminstrator',
+    });
+
+  const { code, expires } = generateCode();
+
   await UserPassword.findOneAndUpdate(
     { user: user._id },
-    { resetToken },
-    {
-      new: true,
-    }
+    { resetCode: code, resetCodeExpires: expires, resetCodeAttempts: 0 },
+    { new: true }
   ).exec();
 
-  const settings = useAppSettings();
-  const idurar_app_email = settings['idurar_app_email'];
-  const idurar_base_url = settings['idurar_base_url'];
-
-  const url = checkAndCorrectURL(idurar_base_url);
-
-  const link = url + '/resetpassword/' + user._id + '/' + resetToken;
-
   await sendMail({
-    email,
+    email: user.email,
     name: user.name,
-    link,
-    subject: 'Reset your password | idurar',
-    idurar_app_email,
-    type: 'passwordVerfication',
+    code,
+    subject: 'HUMO Education - parolni tiklash kodi',
+    type: 'emailVerificationCode',
   });
 
   return res.status(200).json({
     success: true,
     result: null,
-    message: 'Check your email inbox , to reset your password',
+    message: 'Parolni tiklash kodi emailingizga yuborildi.',
   });
 };
 
