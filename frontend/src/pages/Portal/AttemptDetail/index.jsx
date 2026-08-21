@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useLocation, Link } from 'react-router-dom';
 import { Spin, Card, Tag, Space, Progress, Empty } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, ClockCircleOutlined } from '@ant-design/icons';
 
@@ -9,6 +9,8 @@ const LEVEL_LABELS = { beginner: "Boshlang'ich", intermediate: "O'rta", advanced
 
 export default function PortalAttemptDetailPage() {
   const { attemptId } = useParams();
+  const location = useLocation();
+  const { starsEarned, rankBefore, rankAfter } = location.state || {};
   const [loading, setLoading] = useState(true);
   const [attempt, setAttempt] = useState(null);
 
@@ -26,6 +28,25 @@ export default function PortalAttemptDetailPage() {
 
   return (
     <div>
+      {starsEarned > 0 && (
+        <Card
+          style={{
+            marginBottom: 16,
+            background: 'linear-gradient(135deg, #fff7e6, #fff1b8)',
+            borderColor: '#ffd666',
+          }}
+        >
+          <h2 style={{ margin: 0 }}>🎉 Test tugallandi!</h2>
+          <p style={{ fontSize: 20, fontWeight: 'bold', margin: '8px 0' }}>
+            ⭐ +{starsEarned} Stars
+          </p>
+          {rankBefore != null && rankAfter != null && rankBefore !== rankAfter && (
+            <p style={{ margin: 0 }}>
+              🏆 Reyting: #{rankBefore} → #{rankAfter}
+            </p>
+          )}
+        </Card>
+      )}
       <Card style={{ marginBottom: 16 }}>
         <h2>{attempt.testTitle}</h2>
         <Space>

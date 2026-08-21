@@ -60,6 +60,29 @@ async function seedDefaults() {
     }
   }
 
+  // Checked independently (own settingCategory) so it seeds even on a DB
+  // that already has app_settings from before the gamification layer existed.
+  const portalStarSettingCount = await Setting.countDocuments({
+    settingCategory: 'portal_settings',
+  });
+  if (portalStarSettingCount === 0) {
+    await Setting.insertMany([
+      {
+        settingCategory: 'portal_settings',
+        settingKey: 'portal_correct_answer_stars',
+        settingValue: 10,
+        valueType: 'number',
+      },
+      {
+        settingCategory: 'portal_settings',
+        settingKey: 'portal_perfect_score_bonus',
+        settingValue: 50,
+        valueType: 'number',
+      },
+    ]);
+    console.log('👍 Default portal star settings created');
+  }
+
   const Subject = require('@/models/appModels/Subject');
   const subjectCount = await Subject.countDocuments();
   if (subjectCount === 0) {

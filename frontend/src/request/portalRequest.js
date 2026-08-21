@@ -3,9 +3,15 @@ import portalErrorHandler from './portalErrorHandler';
 import successHandler from './successHandler';
 
 const portalRequest = {
-  register: async ({ name, email, password }) => {
+  register: async ({ firstName, lastName, dateOfBirth, email, password }) => {
     try {
-      const response = await portalAxios.post('register', { name, email, password });
+      const response = await portalAxios.post('register', {
+        firstName,
+        lastName,
+        dateOfBirth,
+        email,
+        password,
+      });
       successHandler(response, { notifyOnSuccess: true, notifyOnFailed: true });
       return response.data;
     } catch (error) {
@@ -138,6 +144,22 @@ const portalRequest = {
   getStatsSummary: async () => {
     try {
       const response = await portalAxios.get('stats/summary');
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getLeaderboard: async (period = 'overall') => {
+    try {
+      const response = await portalAxios.get('leaderboard', { params: { period } });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getStarsHistory: async () => {
+    try {
+      const response = await portalAxios.get('stars/history');
       return response.data;
     } catch (error) {
       return portalErrorHandler(error);

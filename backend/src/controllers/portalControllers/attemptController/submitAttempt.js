@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+const awardStars = require('@/utils/awardStars');
+const readBySettingKey = require('@/middlewares/settings/readBySettingKey');
+
 // Grades a single-/multi-choice/true-false answer by re-deriving correctness
 // from the real Question doc — the client's own idea of "correct" (if any)
 // is never trusted.
@@ -17,7 +20,11 @@ const gradeChoiceAnswer = (question, submittedAnswer) => {
   return { isCorrect, pointsAwarded: isCorrect ? question.points || 1 : 0 };
 };
 
+const rankFor = async (Student, totalStars) =>
+  (await Student.countDocuments({ totalStars: { $gt: totalStars }, removed: false })) + 1;
+
 const submitAttempt = async (req, res) => {
+  const Student = mongoose.model('Student');
   const Test = mongoose.model('Test');
   const Question = mongoose.model('Question');
   const Attempt = mongoose.model('Attempt');
@@ -74,6 +81,10 @@ const submitAttempt = async (req, res) => {
 
   const scorePercent = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
 
+  const currentStudent = await Student.findById(req.student._id).exec();
+  const totalBefore = currentStudent.totalStars;
+  const rankBefore = await rankFor(Student, totalBefore);
+
   const attempt = await new Attempt({
     student: req.student._id,
     test: test._id,
@@ -90,9 +101,38 @@ const submitAttempt = async (req, res) => {
     gradedAt: hasUngraded ? undefined : new Date(),
   }).save();
 
+  // Open-response tests aren't graded yet, so no stars until a teacher
+  // confirms the score — otherwise a student could bank stars on an
+  // answer that later turns out wrong with no way to claw them back.
+  let starsEarned = 0;
+  let rankAfter = rankBefore;
+
+  if (!hasUngraded) {
+    const correctCount = gradedAnswers.filter((a) => a.isCorrect === true).length;
+    const [perAnswerSetting, perfectBonusSetting] = await Promise.all([
+      readBySettingKey({ settingKey: 'portal_correct_answer_stars' }),
+      readBySettingKey({ settingKey: 'portal_perfect_score_bonus' }),
+    ]);
+    const perAnswer = perAnswerSetting ? Number(perAnswerSetting.settingValue) : 10;
+    const perfectBonus = perfectBonusSetting ? Number(perfectBonusSetting.settingValue) : 50;
+
+    starsEarned = correctCount * perAnswer + (scorePercent === 100 ? perfectBonus : 0);
+
+    if (starsEarned > 0) {
+      await awardStars({
+        studentId: req.student._id,
+        amount: starsEarned,
+        reason: 'test_completed',
+        refType: 'Attempt',
+        refId: attempt._id,
+      });
+      rankAfter = await rankFor(Student, totalBefore + starsEarned);
+    }
+  }
+
   return res.status(200).json({
     success: true,
-    result: attempt,
+    result: { ...attempt.toObject(), starsEarned, rankBefore, rankAfter },
     message: 'Natija saqlandi.',
   });
 };

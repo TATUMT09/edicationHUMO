@@ -46,7 +46,13 @@ export default function PortalTestTakePage() {
     const data = await portalRequest.submitAttempt(testId, payload);
     setSubmitting(false);
     if (data.success) {
-      navigate(`/portal/attempts/${data.result._id}`);
+      navigate(`/portal/attempts/${data.result._id}`, {
+        state: {
+          starsEarned: data.result.starsEarned,
+          rankBefore: data.result.rankBefore,
+          rankAfter: data.result.rankAfter,
+        },
+      });
     } else {
       message.error(data.message || 'Xatolik yuz berdi');
     }

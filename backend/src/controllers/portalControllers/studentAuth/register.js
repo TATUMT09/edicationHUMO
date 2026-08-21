@@ -9,22 +9,24 @@ const register = async (req, res) => {
   const Student = mongoose.model('Student');
   const StudentPassword = mongoose.model('StudentPassword');
 
-  const { name, email, password } = req.body;
+  const { firstName, lastName, dateOfBirth, email, password } = req.body;
 
   const objectSchema = Joi.object({
-    name: Joi.string().required(),
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    dateOfBirth: Joi.date().max('now').required(),
     email: Joi.string()
       .email({ tlds: { allow: true } })
       .required(),
     password: Joi.string().min(6).required(),
   });
 
-  const { error } = objectSchema.validate({ name, email, password });
+  const { error } = objectSchema.validate({ firstName, lastName, dateOfBirth, email, password });
   if (error) {
     return res.status(409).json({
       success: false,
       result: null,
-      message: "Ism, email va parol (kamida 6 belgi) to'g'ri kiritilishi shart.",
+      message: "Ism, familiya, tug'ilgan sana, email va parol (kamida 6 belgi) to'g'ri kiritilishi shart.",
       errorMessage: error.message,
     });
   }
@@ -41,10 +43,12 @@ const register = async (req, res) => {
         message: "Bu email bilan hisob allaqachon ro'yxatdan o'tgan. Kirish sahifasidan foydalaning.",
       });
     }
-    student.name = name;
+    student.firstName = firstName;
+    student.lastName = lastName;
+    student.dateOfBirth = dateOfBirth;
     await student.save();
   } else {
-    student = await new Student({ name, email: normalizedEmail }).save();
+    student = await new Student({ firstName, lastName, dateOfBirth, email: normalizedEmail }).save();
   }
 
   const salt = uniqueId();
@@ -69,7 +73,7 @@ const register = async (req, res) => {
 
   await sendMail({
     email: normalizedEmail,
-    name,
+    name: student.name,
     code,
     subject: 'HUMO Education - tasdiqlash kodi',
     type: 'emailVerificationCode',

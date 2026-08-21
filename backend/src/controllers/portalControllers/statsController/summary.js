@@ -2,7 +2,13 @@ const mongoose = require('mongoose');
 
 const summary = async (req, res) => {
   const Attempt = mongoose.model('Attempt');
+  const Student = mongoose.model('Student');
   const studentId = req.student._id;
+
+  const me = await Student.findById(studentId).select('totalStars').exec();
+  const totalStars = me?.totalStars || 0;
+  const currentRank =
+    (await Student.countDocuments({ totalStars: { $gt: totalStars }, removed: false })) + 1;
 
   const [overall] = await Attempt.aggregate([
     { $match: { student: studentId, removed: false } },
@@ -57,6 +63,8 @@ const summary = async (req, res) => {
     success: true,
     result: {
       attemptsCount,
+      totalStars,
+      currentRank,
       totalAnswered: overall?.totalAnswered || 0,
       totalCorrect: overall?.totalCorrect || 0,
       totalIncorrect: overall?.totalIncorrect || 0,

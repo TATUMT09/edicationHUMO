@@ -1,14 +1,23 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Layout, Menu, Button, Avatar } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { UserOutlined, LogoutOutlined, HomeOutlined, HistoryOutlined, BarChartOutlined } from '@ant-design/icons';
+import {
+  UserOutlined,
+  LogoutOutlined,
+  HomeOutlined,
+  HistoryOutlined,
+  BarChartOutlined,
+  TrophyOutlined,
+  StarOutlined,
+} from '@ant-design/icons';
 
 import { selectCurrentStudent } from '@/redux/portalAuth/selectors';
 import { portalLogout } from '@/redux/portalAuth/actions';
 import useLanguage from '@/locale/useLanguage';
 import PageLoader from '@/components/PageLoader';
 import PortalRouter from '@/router/PortalRouter';
+import portalRequest from '@/request/portalRequest';
 import logo from '@/style/images/humo-logo.jpg';
 
 const { Header, Content } = Layout;
@@ -18,6 +27,14 @@ export default function PortalMain() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const student = useSelector(selectCurrentStudent);
+  const [totalStars, setTotalStars] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const data = await portalRequest.getStatsSummary();
+      if (data.success) setTotalStars(data.result.totalStars);
+    })();
+  }, []);
 
   const onLogout = () => {
     dispatch(portalLogout());
@@ -29,6 +46,16 @@ export default function PortalMain() {
       key: 'subjects',
       icon: <HomeOutlined />,
       label: <Link to="/portal">{translate('subjects')}</Link>,
+    },
+    {
+      key: 'leaderboard',
+      icon: <TrophyOutlined />,
+      label: <Link to="/portal/leaderboard">Reyting</Link>,
+    },
+    {
+      key: 'stars',
+      icon: <StarOutlined />,
+      label: <Link to="/portal/stars">Yulduzlar</Link>,
     },
     {
       key: 'history',
@@ -64,6 +91,9 @@ export default function PortalMain() {
           style={{ flex: 1, marginLeft: 40, borderBottom: 'none', minWidth: 0 }}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {totalStars != null && (
+            <span style={{ fontWeight: 'bold', color: '#d48806' }}>⭐ {totalStars}</span>
+          )}
           <Avatar icon={<UserOutlined />} src={student?.photo} />
           <span>{student?.name}</span>
           <Button icon={<LogoutOutlined />} onClick={onLogout}>

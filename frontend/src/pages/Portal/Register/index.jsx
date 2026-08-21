@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Form, Button, Input } from 'antd';
+import { Form, Button, Input, DatePicker } from 'antd';
+import dayjs from 'dayjs';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 
 import useLanguage from '@/locale/useLanguage';
@@ -17,7 +18,14 @@ export default function PortalRegisterPage() {
   const dispatch = useDispatch();
 
   const onFinish = (values) => {
-    dispatch(portalRegister({ registerData: values }));
+    dispatch(
+      portalRegister({
+        registerData: {
+          ...values,
+          dateOfBirth: values.dateOfBirth.format('YYYY-MM-DD'),
+        },
+      })
+    );
   };
 
   useEffect(() => {
@@ -27,8 +35,23 @@ export default function PortalRegisterPage() {
   const FormContainer = () => (
     <Loading isLoading={isLoading}>
       <Form layout="vertical" name="portal_register" onFinish={onFinish}>
-        <Form.Item label={translate('name')} name="name" rules={[{ required: true }]}>
+        <Form.Item label="Ism" name="firstName" rules={[{ required: true }]}>
           <Input prefix={<UserOutlined />} size="large" />
+        </Form.Item>
+        <Form.Item label="Familiya" name="lastName" rules={[{ required: true }]}>
+          <Input prefix={<UserOutlined />} size="large" />
+        </Form.Item>
+        <Form.Item
+          label="Tug'ilgan sana"
+          name="dateOfBirth"
+          rules={[{ required: true, message: "Tug'ilgan sanani kiriting" }]}
+        >
+          <DatePicker
+            size="large"
+            style={{ width: '100%' }}
+            format="DD/MM/YYYY"
+            disabledDate={(current) => current && current > dayjs().endOf('day')}
+          />
         </Form.Item>
         <Form.Item
           label={translate('email')}
