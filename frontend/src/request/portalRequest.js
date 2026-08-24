@@ -143,9 +143,12 @@ const portalRequest = {
       return portalErrorHandler(error);
     }
   },
-  submitAttempt: async (testId, answers) => {
+  submitAttempt: async (testId, answers, sessionToken) => {
     try {
-      const response = await portalAxios.post(`tests/${testId}/attempts`, { answers });
+      const response = await portalAxios.post(`tests/${testId}/attempts`, {
+        answers,
+        sessionToken,
+      });
       successHandler(response, { notifyOnSuccess: false, notifyOnFailed: true });
       return response.data;
     } catch (error) {

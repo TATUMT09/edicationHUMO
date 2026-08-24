@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const QUESTION_COUNT_TIERS = require('@/utils/questionCountTiers');
+const { signTestSession } = require('@/utils/testSessionToken');
 
 // Fisher-Yates — only reorders the array the student sees; the underlying
 // data (which option is correct, question content) is never touched, and
@@ -81,9 +82,15 @@ const getTestToTake = async (req, res) => {
     options: shuffle((q.options || []).map((opt) => ({ _id: opt._id, text: opt.text }))),
   }));
 
+  const sessionToken = signTestSession({
+    studentId: req.student._id,
+    testId: test._id,
+    questionIds: selected.map((q) => String(q._id)),
+  });
+
   return res.status(200).json({
     success: true,
-    result: { test, questions: safeQuestions },
+    result: { test, questions: safeQuestions, sessionToken },
     message: 'Test tayyor.',
   });
 };

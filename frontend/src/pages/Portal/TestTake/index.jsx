@@ -32,6 +32,7 @@ export default function PortalTestTakePage() {
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [test, setTest] = useState(null);
   const [questions, setQuestions] = useState([]);
+  const [sessionToken, setSessionToken] = useState(null);
   const [answers, setAnswers] = useState({});
   const [checkResults, setCheckResults] = useState({}); // { [questionId]: { isCorrect, message } }
   const [checking, setChecking] = useState({});
@@ -61,6 +62,7 @@ export default function PortalTestTakePage() {
     if (data.success) {
       setTest(data.result.test);
       setQuestions(data.result.questions);
+      setSessionToken(data.result.sessionToken);
       setCurrentIndex(0);
       if (data.result.test.timePerQuestionSeconds) {
         setTimeLeft(data.result.test.timePerQuestionSeconds);
@@ -88,7 +90,7 @@ export default function PortalTestTakePage() {
     if (submittingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
-    const data = await portalRequest.submitAttempt(testId, buildPayload());
+    const data = await portalRequest.submitAttempt(testId, buildPayload(), sessionToken);
     setSubmitting(false);
     if (data.success) {
       navigate(`/portal/attempts/${data.result._id}`, {

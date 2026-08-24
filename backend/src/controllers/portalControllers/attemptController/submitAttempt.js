@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const awardStars = require('@/utils/awardStars');
 const gradeChoiceAnswer = require('@/utils/gradeChoiceAnswer');
+const { verifyTestSession } = require('@/utils/testSessionToken');
 const readBySettingKey = require('@/middlewares/settings/readBySettingKey');
 
 const rankFor = async (Student, totalStars) =>
@@ -14,14 +15,30 @@ const submitAttempt = async (req, res) => {
   const Attempt = mongoose.model('Attempt');
 
   const { testId } = req.params;
-  const { answers = [] } = req.body;
+  const { answers = [], sessionToken } = req.body;
 
   const test = await Test.findOne({ _id: testId, removed: false, enabled: true }).exec();
   if (!test) {
     return res.status(404).json({ success: false, result: null, message: 'Test topilmadi.' });
   }
 
-  const questions = await Question.find({ test: testId, removed: false }).exec();
+  // The student may have been served only a random subset of the test's
+  // full question bank (count-tier chooser) — grade against exactly that
+  // signed subset, never the whole bank, and never a client-supplied list.
+  const session = verifyTestSession(sessionToken, { studentId: req.student._id, testId });
+  if (!session) {
+    return res.status(400).json({
+      success: false,
+      result: null,
+      message: "Test sessiyasi eskirgan. Iltimos, testni qaytadan boshlang.",
+    });
+  }
+
+  const questions = await Question.find({
+    _id: { $in: session.questionIds },
+    test: testId,
+    removed: false,
+  }).exec();
   if (questions.length === 0) {
     return res.status(409).json({
       success: false,
