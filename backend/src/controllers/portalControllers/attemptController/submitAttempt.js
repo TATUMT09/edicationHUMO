@@ -1,24 +1,8 @@
 const mongoose = require('mongoose');
 
 const awardStars = require('@/utils/awardStars');
+const gradeChoiceAnswer = require('@/utils/gradeChoiceAnswer');
 const readBySettingKey = require('@/middlewares/settings/readBySettingKey');
-
-// Grades a single-/multi-choice/true-false answer by re-deriving correctness
-// from the real Question doc — the client's own idea of "correct" (if any)
-// is never trusted.
-const gradeChoiceAnswer = (question, submittedAnswer) => {
-  const correctIds = new Set(
-    (question.options || []).filter((opt) => opt.isCorrect).map((opt) => String(opt._id))
-  );
-  const selectedIds = new Set((submittedAnswer?.selectedOptionIds || []).map(String));
-
-  const isCorrect =
-    correctIds.size > 0 &&
-    correctIds.size === selectedIds.size &&
-    [...correctIds].every((id) => selectedIds.has(id));
-
-  return { isCorrect, pointsAwarded: isCorrect ? question.points || 1 : 0 };
-};
 
 const rankFor = async (Student, totalStars) =>
   (await Student.countDocuments({ totalStars: { $gt: totalStars }, removed: false })) + 1;

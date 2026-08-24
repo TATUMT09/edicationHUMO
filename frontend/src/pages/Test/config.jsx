@@ -44,6 +44,10 @@ export const fields = {
     type: 'number',
     label: 'time_limit_minutes',
   },
+  timePerQuestionSeconds: {
+    type: 'number',
+    label: 'time_per_question_seconds',
+  },
   passingScorePercent: {
     type: 'number',
     label: 'passing_score_percent',

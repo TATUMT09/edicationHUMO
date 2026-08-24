@@ -43,4 +43,6 @@ const schema = new mongoose.Schema({
   },
 });
 
+schema.index({ test: 1, removed: 1 });
+
 module.exports = mongoose.model('Question', schema);

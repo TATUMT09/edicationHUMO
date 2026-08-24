@@ -40,4 +40,6 @@ const schema = new mongoose.Schema({
 
 schema.plugin(require('mongoose-autopopulate'));
 
+schema.index({ subject: 1, level: 1, enabled: 1, removed: 1 });
+
 module.exports = mongoose.model('Book', schema);

@@ -26,6 +26,10 @@ const schema = new mongoose.Schema({
   },
   description: String,
   timeLimitMinutes: Number,
+  // Optional per-question countdown (seconds). When set, the portal switches
+  // the test-taking UI to one-question-at-a-time with a timer; when absent,
+  // all questions are shown on one page as before.
+  timePerQuestionSeconds: Number,
   passingScorePercent: Number,
   order: {
     type: Number,

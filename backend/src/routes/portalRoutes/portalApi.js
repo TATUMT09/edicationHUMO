@@ -16,9 +16,12 @@ router.route('/subjects').get(catchErrors(contentController.listSubjects));
 router.route('/subjects/:subjectId/content').get(catchErrors(contentController.listContent));
 router.route('/videos/:videoId').get(catchErrors(contentController.getVideo));
 router.route('/books/:bookId').get(catchErrors(contentController.getBook));
+router.route('/library').get(catchErrors(contentController.getLibrary));
+router.route('/tests/:testId/meta').get(catchErrors(contentController.getTestMeta));
 router.route('/tests/:testId/take').get(catchErrors(contentController.getTestToTake));
 
 router.route('/tests/:testId/attempts').post(catchErrors(attemptController.submitAttempt));
+router.route('/tests/:testId/check-answer').post(catchErrors(attemptController.checkAnswer));
 router.route('/attempts').get(catchErrors(attemptController.listMyAttempts));
 router.route('/attempts/:attemptId').get(catchErrors(attemptController.getAttempt));
 

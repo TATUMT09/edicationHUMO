@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { Spin, Card, Tag, Space, Progress, Empty } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, ClockCircleOutlined } from '@ant-design/icons';
 
 import portalRequest from '@/request/portalRequest';
+import { randomScoreMessage } from '../motivationMessages';
 
 const LEVEL_LABELS = { beginner: "Boshlang'ich", intermediate: "O'rta", advanced: 'Yuqori' };
 
@@ -22,6 +23,11 @@ export default function PortalAttemptDetailPage() {
       setLoading(false);
     })();
   }, [attemptId]);
+
+  const scoreMessage = useMemo(
+    () => (attempt?.status === 'graded' ? randomScoreMessage(attempt.scorePercent) : null),
+    [attempt?._id, attempt?.status, attempt?.scorePercent]
+  );
 
   if (loading) return <Spin size="large" style={{ display: 'block', margin: '80px auto' }} />;
   if (!attempt) return <Empty description="Natija topilmadi" />;
@@ -56,6 +62,9 @@ export default function PortalAttemptDetailPage() {
           </span>
         </Space>
         <Progress percent={attempt.scorePercent} style={{ marginTop: 12, maxWidth: 400 }} />
+        {scoreMessage && (
+          <p style={{ marginTop: 12, fontSize: 16, fontWeight: 'bold' }}>{scoreMessage}</p>
+        )}
       </Card>
 
       <Space direction="vertical" size={16} style={{ width: '100%' }}>

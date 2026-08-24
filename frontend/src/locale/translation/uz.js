@@ -256,6 +256,7 @@ const lang = {
   test_type: 'Test turi',
   level: 'Daraja',
   time_limit_minutes: 'Vaqt chegarasi (daqiqa)',
+  time_per_question_seconds: "Har savolga vaqt (soniya, ixtiyoriy)",
   passing_score_percent: "O'tish balli (%)",
   question: 'Savol',
   questions: 'Savollar',

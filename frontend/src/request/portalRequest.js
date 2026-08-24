@@ -116,9 +116,28 @@ const portalRequest = {
       return portalErrorHandler(error);
     }
   },
-  getTestToTake: async (testId) => {
+  getTestMeta: async (testId) => {
     try {
-      const response = await portalAxios.get(`tests/${testId}/take`);
+      const response = await portalAxios.get(`tests/${testId}/meta`);
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getTestToTake: async (testId, count) => {
+    try {
+      const response = await portalAxios.get(`tests/${testId}/take`, { params: { count } });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  checkAnswer: async (testId, { questionId, selectedOptionIds }) => {
+    try {
+      const response = await portalAxios.post(`tests/${testId}/check-answer`, {
+        questionId,
+        selectedOptionIds,
+      });
       return response.data;
     } catch (error) {
       return portalErrorHandler(error);
@@ -193,6 +212,18 @@ const portalRequest = {
   getMyRewardOrders: async () => {
     try {
       const response = await portalAxios.get('reward-orders');
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getLibrary: async ({ subjectId, level, q } = {}) => {
+    try {
+      const params = {};
+      if (subjectId) params.subjectId = subjectId;
+      if (level) params.level = level;
+      if (q) params.q = q;
+      const response = await portalAxios.get('library', { params });
       return response.data;
     } catch (error) {
       return portalErrorHandler(error);

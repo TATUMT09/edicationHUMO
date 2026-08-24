@@ -47,4 +47,6 @@ const schema = new mongoose.Schema({
 
 schema.plugin(require('mongoose-autopopulate'));
 
+schema.index({ student: 1, test: 1, submittedAt: -1 });
+
 module.exports = mongoose.model('Attempt', schema);
