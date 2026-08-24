@@ -10,6 +10,7 @@ import {
   BarChartOutlined,
   TrophyOutlined,
   StarOutlined,
+  GiftOutlined,
 } from '@ant-design/icons';
 
 import { selectCurrentStudent } from '@/redux/portalAuth/selectors';
@@ -56,6 +57,11 @@ export default function PortalMain() {
       key: 'stars',
       icon: <StarOutlined />,
       label: <Link to="/portal/stars">Yulduzlar</Link>,
+    },
+    {
+      key: 'rewards',
+      icon: <GiftOutlined />,
+      label: <Link to="/portal/rewards">Sovg'alar</Link>,
     },
     {
       key: 'history',

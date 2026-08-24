@@ -12,6 +12,8 @@ const History = lazy(() => import('@/pages/Portal/History'));
 const Stats = lazy(() => import('@/pages/Portal/Stats'));
 const Leaderboard = lazy(() => import('@/pages/Portal/Leaderboard'));
 const StarHistory = lazy(() => import('@/pages/Portal/StarHistory'));
+const RewardStore = lazy(() => import('@/pages/Portal/RewardStore'));
+const MyRewardOrders = lazy(() => import('@/pages/Portal/MyRewardOrders'));
 
 export default function PortalRouter() {
   return (
@@ -28,6 +30,8 @@ export default function PortalRouter() {
       <Route path="/portal/stats" element={<Stats />} />
       <Route path="/portal/leaderboard" element={<Leaderboard />} />
       <Route path="/portal/stars" element={<StarHistory />} />
+      <Route path="/portal/rewards" element={<RewardStore />} />
+      <Route path="/portal/reward-orders" element={<MyRewardOrders />} />
     </Routes>
   );
 }

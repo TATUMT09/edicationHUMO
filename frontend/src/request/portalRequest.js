@@ -173,6 +173,31 @@ const portalRequest = {
       return portalErrorHandler(error);
     }
   },
+  getRewards: async () => {
+    try {
+      const response = await portalAxios.get('rewards');
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  purchaseReward: async (rewardId) => {
+    try {
+      const response = await portalAxios.post(`rewards/${rewardId}/purchase`);
+      successHandler(response, { notifyOnSuccess: true, notifyOnFailed: true });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getMyRewardOrders: async () => {
+    try {
+      const response = await portalAxios.get('reward-orders');
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
 };
 
 export default portalRequest;
