@@ -19,10 +19,11 @@ Vazifangiz: shu matndan barcha savollarni, ularning javob variantlarini va TO'G'
 }
 
 MUHIM QOIDA — TO'G'RI JAVOBNI ANIQLASH (buni taxmin qilmang, faqat shu belgiga qarang):
-- Variant matnida yoki yonida **yulduzcha (*) belgisi** bo'lsa — o'sha variant TO'G'RI javob ("isCorrect": true). Yulduzcha belgisini natijadagi "text" maydonidan olib tashlang (faqat belgi sifatida ishlatiladi, matnga kirmasin).
+- Variant qatorida **yulduzcha (*) belgisi** bo'lsa — o'sha variant TO'G'RI javob ("isCorrect": true). Belgi variantning BOSHIDA ("*A) 12"), harfdan keyin ("A) *12"), yoki OXIRIDA ("A) 12 *") bo'lishi mumkin — barcha holatlarda xuddi shu qoida ishlaydi. Yulduzcha belgisini (va uni ajratib turgan bo'sh joyni) natijadagi "text" maydonidan olib tashlang — faqat variantning o'zi (masalan "A) 12" yoki shunga o'xshash) qolsin, yulduzcha matnga kirmasin.
 - Hech qanday variantda "*" belgisi bo'lmasa — barcha variantlarning "isCorrect" ini false qiling (taxmin qilmang, boshqa belgilarga (qalin, tagiga chizilgan va h.k.) asoslanmang).
 - Agar bir nechta variantda "*" bo'lsa — questionType "multi_choice" bo'lsin, aks holda "single_choice".
 - Agar savolda variantlar umuman bo'lmasa (faqat ochiq savol) — questionType "open_response", "options" bo'sh massiv, "correctAnswerText" ga hujjatdagi javobni yozing.
+- "prompt" maydonida savolning boshidagi raqamlashni ("1.", "2)" va h.k.) olib tashlang — faqat savolning o'zi qolsin.
 - Faqat JSON qaytaring, boshqa hech qanday matn (izoh, tushuntirish) qo'shmang.`;
 
 const parseFile = async (req, res) => {
