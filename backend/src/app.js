@@ -22,6 +22,13 @@ const fileUpload = require('express-fileupload');
 // create our Express app
 const app = express();
 
+// The app always sits behind nginx in production (see the /etc/nginx site
+// config), which sets X-Forwarded-For — without this, Express reports every
+// request's IP as nginx's own loopback address, so express-rate-limit
+// throws (ERR_ERL_UNEXPECTED_X_FORWARDED_FOR) and silently rate-limits the
+// entire site as if it were a single visitor instead of per real client IP.
+app.set('trust proxy', 1);
+
 app.use(
   cors({
     origin: true,
