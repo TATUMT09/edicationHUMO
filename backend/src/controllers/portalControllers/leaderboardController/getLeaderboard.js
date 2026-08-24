@@ -9,9 +9,31 @@ const PERIOD_MS = {
   monthly: 30 * 24 * 60 * 60 * 1000,
 };
 
+// "Nechta misol yechgani" — count of correctly-answered questions, so the
+// leaderboard isn't just a raw star ranking but shows real solved-problem
+// volume too (a student could have fewer stars but have solved more).
+const attachSolvedCounts = async (Attempt, entries) => {
+  const studentIds = entries.map((e) => e.student._id);
+  if (studentIds.length === 0) return entries;
+
+  const counts = await Attempt.aggregate([
+    { $match: { student: { $in: studentIds }, removed: false } },
+    { $unwind: '$answers' },
+    { $match: { 'answers.isCorrect': true } },
+    { $group: { _id: '$student', solved: { $sum: 1 } } },
+  ]);
+  const countByStudent = new Map(counts.map((c) => [String(c._id), c.solved]));
+
+  return entries.map((e) => ({
+    ...e,
+    solvedCount: countByStudent.get(String(e.student._id)) || 0,
+  }));
+};
+
 const getLeaderboard = async (req, res) => {
   const Student = mongoose.model('Student');
   const StarTransaction = mongoose.model('StarTransaction');
+  const Attempt = mongoose.model('Attempt');
 
   const period = ['daily', 'weekly', 'monthly'].includes(req.query.period)
     ? req.query.period
@@ -74,6 +96,8 @@ const getLeaderboard = async (req, res) => {
     ]);
     myRank = (aheadCount?.ahead || 0) + 1;
   }
+
+  entries = await attachSolvedCounts(Attempt, entries);
 
   return res.status(200).json({
     success: true,

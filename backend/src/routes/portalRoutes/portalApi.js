@@ -8,6 +8,7 @@ const attemptController = require('@/controllers/portalControllers/attemptContro
 const statsController = require('@/controllers/portalControllers/statsController');
 const leaderboardController = require('@/controllers/portalControllers/leaderboardController');
 const starsController = require('@/controllers/portalControllers/starsController');
+const rewardController = require('@/controllers/portalControllers/rewardController');
 
 router.route('/logout').post(catchErrors(studentAuth.logout));
 
@@ -25,5 +26,9 @@ router.route('/stats/summary').get(catchErrors(statsController.summary));
 
 router.route('/leaderboard').get(catchErrors(leaderboardController.getLeaderboard));
 router.route('/stars/history').get(catchErrors(starsController.getHistory));
+
+router.route('/rewards').get(catchErrors(rewardController.listRewards));
+router.route('/rewards/:rewardId/purchase').post(catchErrors(rewardController.purchaseReward));
+router.route('/reward-orders').get(catchErrors(rewardController.listMyOrders));
 
 module.exports = router;

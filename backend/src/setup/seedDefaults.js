@@ -79,6 +79,12 @@ async function seedDefaults() {
         settingValue: 50,
         valueType: 'number',
       },
+      {
+        settingCategory: 'portal_settings',
+        settingKey: 'portal_daily_star_limit',
+        settingValue: 200,
+        valueType: 'number',
+      },
     ]);
     console.log('👍 Default portal star settings created');
   }

@@ -30,6 +30,8 @@ const TestAiImport = lazy(() => import('@/pages/Test/AiImport'));
 const Question = lazy(() => import('@/pages/Question'));
 const VideoLesson = lazy(() => import('@/pages/VideoLesson'));
 const Book = lazy(() => import('@/pages/Book'));
+const Reward = lazy(() => import('@/pages/Reward'));
+const RewardOrder = lazy(() => import('@/pages/RewardOrder'));
 
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
 
@@ -121,6 +123,14 @@ let routes = {
     {
       path: '/book',
       element: <Book />,
+    },
+    {
+      path: '/reward',
+      element: <Reward />,
+    },
+    {
+      path: '/rewardorder',
+      element: <RewardOrder />,
     },
 
     {

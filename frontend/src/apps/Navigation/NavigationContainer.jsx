@@ -29,6 +29,8 @@ import {
   PlayCircleOutlined,
   CloudUploadOutlined,
   ReadOutlined,
+  GiftOutlined,
+  ShoppingCartOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -138,6 +140,16 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'book',
       icon: <ReadOutlined />,
       label: <Link to={'/book'}>{translate('books')}</Link>,
+    },
+    {
+      key: 'reward',
+      icon: <GiftOutlined />,
+      label: <Link to={'/reward'}>{translate('rewards')}</Link>,
+    },
+    {
+      key: 'rewardorder',
+      icon: <ShoppingCartOutlined />,
+      label: <Link to={'/rewardorder'}>{translate('reward_orders')}</Link>,
     },
   ].filter(Boolean);
 

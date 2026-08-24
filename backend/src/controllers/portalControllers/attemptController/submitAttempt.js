@@ -107,16 +107,46 @@ const submitAttempt = async (req, res) => {
   let starsEarned = 0;
   let rankAfter = rankBefore;
 
+  let dailyLimitReached = false;
+
   if (!hasUngraded) {
     const correctCount = gradedAnswers.filter((a) => a.isCorrect === true).length;
-    const [perAnswerSetting, perfectBonusSetting] = await Promise.all([
+    const [perAnswerSetting, perfectBonusSetting, dailyLimitSetting] = await Promise.all([
       readBySettingKey({ settingKey: 'portal_correct_answer_stars' }),
       readBySettingKey({ settingKey: 'portal_perfect_score_bonus' }),
+      readBySettingKey({ settingKey: 'portal_daily_star_limit' }),
     ]);
     const perAnswer = perAnswerSetting ? Number(perAnswerSetting.settingValue) : 10;
     const perfectBonus = perfectBonusSetting ? Number(perfectBonusSetting.settingValue) : 50;
+    const dailyLimit = dailyLimitSetting ? Number(dailyLimitSetting.settingValue) : 200;
 
-    starsEarned = correctCount * perAnswer + (scorePercent === 100 ? perfectBonus : 0);
+    let computedStars = correctCount * perAnswer + (scorePercent === 100 ? perfectBonus : 0);
+
+    if (computedStars > 0 && dailyLimit > 0) {
+      const StarTransaction = mongoose.model('StarTransaction');
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const [todayTotal] = await StarTransaction.aggregate([
+        {
+          $match: {
+            student: req.student._id,
+            removed: false,
+            amount: { $gt: 0 },
+            created: { $gte: todayStart },
+          },
+        },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ]);
+      const earnedToday = todayTotal?.total || 0;
+      const remainingAllowance = Math.max(dailyLimit - earnedToday, 0);
+
+      if (computedStars > remainingAllowance) {
+        computedStars = remainingAllowance;
+        dailyLimitReached = true;
+      }
+    }
+
+    starsEarned = computedStars;
 
     if (starsEarned > 0) {
       await awardStars({
@@ -132,7 +162,7 @@ const submitAttempt = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    result: { ...attempt.toObject(), starsEarned, rankBefore, rankAfter },
+    result: { ...attempt.toObject(), starsEarned, rankBefore, rankAfter, dailyLimitReached },
     message: 'Natija saqlandi.',
   });
 };

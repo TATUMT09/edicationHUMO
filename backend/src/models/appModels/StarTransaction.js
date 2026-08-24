@@ -16,7 +16,7 @@ const schema = new mongoose.Schema({
   },
   reason: {
     type: String,
-    enum: ['test_completed', 'perfect_score_bonus', 'admin_adjustment'],
+    enum: ['test_completed', 'perfect_score_bonus', 'admin_adjustment', 'reward_purchase'],
     required: true,
   },
   refType: { type: String },

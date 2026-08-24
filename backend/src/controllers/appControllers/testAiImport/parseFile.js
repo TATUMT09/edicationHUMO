@@ -1,30 +1,63 @@
 const getClient = require('./geminiClient');
 const extractDocText = require('./extractDocText');
 
-const SYSTEM_INSTRUCTION = `Siz test hujjatlarini tahlil qiluvchi yordamchisiz. Sizga o'qituvchi tayyorlagan .docx fayldan olingan HTML matn beriladi — bu haqiqiy test savollari va javob variantlarini o'z ichiga oladi.
+// The AI's ONLY job is splitting the document into questions/options and
+// preserving their text as-is — it never decides what's correct. Deciding
+// correctness from formatting cues is slow and unreliable for a model; "*"
+// detection is a one-line string check, so it's done deterministically in
+// JS after extraction (see markCorrectAnswers below), not asked of the AI.
+const SYSTEM_INSTRUCTION = `Siz test hujjatlarini strukturaga ajratuvchi yordamchisiz. Sizga o'qituvchi tayyorlagan .docx fayldan olingan HTML matn beriladi.
 
-Vazifangiz: shu matndan barcha savollarni, ularning javob variantlarini va TO'G'RI JAVOBNI aniqlab, faqat quyidagi JSON formatida javob qaytarish:
+Vazifangiz FAQAT: matnni savollarga va har bir savolning javob variantlariga ajratish, matnni O'ZGARTIRMASDAN. Quyidagi JSON formatida javob qaytaring:
 
 {
-  "title": "Testning taxminiy sarlavhasi (matn mazmuniga qarab)",
+  "title": "Testning taxminiy sarlavhasi",
   "questions": [
     {
-      "prompt": "Savol matni",
-      "questionType": "single_choice" | "multi_choice" | "true_false" | "open_response",
-      "options": [{"text": "Variant matni", "isCorrect": true yoki false}],
-      "correctAnswerText": "faqat open_response uchun, namunaviy javob matni",
-      "points": 1
+      "prompt": "Savol matni (boshidagi '1.', '2)' kabi raqamlashsiz)",
+      "options": ["variant matni, o'zgartirmasdan (masalan '*A) 12' yoki 'A) 12 *')", "..."]
     }
   ]
 }
 
-MUHIM QOIDA — TO'G'RI JAVOBNI ANIQLASH (buni taxmin qilmang, faqat shu belgiga qarang):
-- Variant qatorida **yulduzcha (*) belgisi** bo'lsa — o'sha variant TO'G'RI javob ("isCorrect": true). Belgi variantning BOSHIDA ("*A) 12"), harfdan keyin ("A) *12"), yoki OXIRIDA ("A) 12 *") bo'lishi mumkin — barcha holatlarda xuddi shu qoida ishlaydi. Yulduzcha belgisini (va uni ajratib turgan bo'sh joyni) natijadagi "text" maydonidan olib tashlang — faqat variantning o'zi (masalan "A) 12" yoki shunga o'xshash) qolsin, yulduzcha matnga kirmasin.
-- Hech qanday variantda "*" belgisi bo'lmasa — barcha variantlarning "isCorrect" ini false qiling (taxmin qilmang, boshqa belgilarga (qalin, tagiga chizilgan va h.k.) asoslanmang).
-- Agar bir nechta variantda "*" bo'lsa — questionType "multi_choice" bo'lsin, aks holda "single_choice".
-- Agar savolda variantlar umuman bo'lmasa (faqat ochiq savol) — questionType "open_response", "options" bo'sh massiv, "correctAnswerText" ga hujjatdagi javobni yozing.
-- "prompt" maydonida savolning boshidagi raqamlashni ("1.", "2)" va h.k.) olib tashlang — faqat savolning o'zi qolsin.
-- Faqat JSON qaytaring, boshqa hech qanday matn (izoh, tushuntirish) qo'shmang.`;
+QOIDALAR:
+- Variant matnini AYNAN qandayligicha qoldiring — "*" belgisi bo'lsa ham, shu holicha yozing, uni olib tashlamang yoki tahlil qilmang.
+- Agar savolda variantlar umuman bo'lmasa (ochiq savol) — "options" bo'sh massiv bo'lsin.
+- Hech qanday to'g'ri javobni ANIQLASHGA URINMANG — bu sizning vazifangiz emas.
+- Faqat JSON qaytaring, boshqa hech qanday matn qo'shmang.`;
+
+// Deterministic: an option is correct iff its extracted text contains "*",
+// anywhere in the string (teachers place it before, inside, or after the
+// option). The marker itself is stripped from the text shown to the admin.
+const markCorrectAnswers = (rawQuestions) => {
+  return rawQuestions.map((q) => {
+    const rawOptions = Array.isArray(q.options) ? q.options : [];
+
+    if (rawOptions.length === 0) {
+      return {
+        prompt: q.prompt,
+        questionType: 'open_response',
+        options: [],
+        correctAnswerText: '',
+        points: 1,
+      };
+    }
+
+    const options = rawOptions.map((text) => {
+      const isCorrect = text.includes('*');
+      return { text: text.replace(/\*/g, '').trim(), isCorrect };
+    });
+
+    const correctCount = options.filter((o) => o.isCorrect).length;
+
+    return {
+      prompt: q.prompt,
+      questionType: correctCount > 1 ? 'multi_choice' : 'single_choice',
+      options,
+      points: 1,
+    };
+  });
+};
 
 const parseFile = async (req, res) => {
   const client = getClient();
@@ -82,10 +115,12 @@ const parseFile = async (req, res) => {
     });
   }
 
+  const questions = markCorrectAnswers(parsed.questions);
+
   return res.status(200).json({
     success: true,
-    result: parsed,
-    message: `${parsed.questions.length} ta savol topildi.`,
+    result: { title: parsed.title, questions },
+    message: `${questions.length} ta savol topildi.`,
   });
 };
 
