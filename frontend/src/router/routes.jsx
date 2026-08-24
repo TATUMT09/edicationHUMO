@@ -26,6 +26,7 @@ const InvoiceRecordPayment = lazy(() => import('@/pages/Invoice/InvoiceRecordPay
 
 const Subject = lazy(() => import('@/pages/Subject'));
 const Test = lazy(() => import('@/pages/Test'));
+const TestAiImport = lazy(() => import('@/pages/Test/AiImport'));
 const Question = lazy(() => import('@/pages/Question'));
 const VideoLesson = lazy(() => import('@/pages/VideoLesson'));
 
@@ -103,6 +104,10 @@ let routes = {
     {
       path: '/test',
       element: <Test />,
+    },
+    {
+      path: '/test/ai-import',
+      element: <TestAiImport />,
     },
     {
       path: '/question',

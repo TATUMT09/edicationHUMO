@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const { catchErrors } = require('@/handlers/errorHandlers');
 const router = express.Router();
 
@@ -6,6 +7,11 @@ const appControllers = require('@/controllers/appControllers');
 const { routesList } = require('@/models/utils');
 const { singleStorageUpload } = require('@/middlewares/uploadMiddleware');
 const videoLessonUpload = require('@/controllers/appControllers/videoLessonUpload');
+const testAiImport = require('@/controllers/appControllers/testAiImport');
+
+// In-memory only — the .docx is read once to extract text for the AI
+// prompt and never needs to touch disk.
+const memoryUpload = multer({ storage: multer.memoryStorage() }).single('file');
 
 const routerApp = (entity, controller) => {
   router.route(`/${entity}/create`).post(catchErrors(controller['create']));
@@ -31,6 +37,13 @@ const routerApp = (entity, controller) => {
       singleStorageUpload({ entity: 'videolesson', fieldName: 'videoUrl', fileType: 'video' }),
       catchErrors(videoLessonUpload)
     );
+  }
+
+  if (entity === 'test') {
+    router
+      .route(`/${entity}/ai-parse`)
+      .post(memoryUpload, catchErrors(testAiImport.parseFile));
+    router.route(`/${entity}/ai-import`).post(catchErrors(testAiImport.confirmImport));
   }
 };
 

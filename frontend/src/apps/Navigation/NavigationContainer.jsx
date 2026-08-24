@@ -27,6 +27,7 @@ import {
   FileTextOutlined,
   QuestionCircleOutlined,
   PlayCircleOutlined,
+  CloudUploadOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -121,6 +122,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'question',
       icon: <QuestionCircleOutlined />,
       label: <Link to={'/question'}>{translate('questions')}</Link>,
+    },
+    {
+      key: 'test-ai-import',
+      icon: <CloudUploadOutlined />,
+      label: <Link to={'/test/ai-import'}>AI orqali test yuklash</Link>,
     },
     {
       key: 'video-lesson',

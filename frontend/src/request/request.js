@@ -55,16 +55,30 @@ const request = {
       return errorHandler(error);
     }
   },
-  uploadFile: async ({ entity, file }) => {
+  uploadFile: async ({ entity, file, path }) => {
     try {
       includeToken();
       const formData = new FormData();
       formData.append('file', file);
-      const response = await axios.post(entity + '/upload', formData, {
+      const response = await axios.post(path || entity + '/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       successHandler(response, {
         notifyOnSuccess: false,
+        notifyOnFailed: true,
+      });
+      return response.data;
+    } catch (error) {
+      return errorHandler(error);
+    }
+  },
+
+  postTo: async ({ path, jsonData }) => {
+    try {
+      includeToken();
+      const response = await axios.post(path, jsonData);
+      successHandler(response, {
+        notifyOnSuccess: true,
         notifyOnFailed: true,
       });
       return response.data;
