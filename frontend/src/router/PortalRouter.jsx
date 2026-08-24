@@ -15,6 +15,7 @@ const StarHistory = lazy(() => import('@/pages/Portal/StarHistory'));
 export default function PortalRouter() {
   return (
     <Routes>
+      <Route path="/" element={<Subjects />} />
       <Route path="/portal" element={<Subjects />} />
       <Route path="/portal/subjects/:subjectId" element={<Levels />} />
       <Route path="/portal/subjects/:subjectId/:level" element={<ContentList />} />

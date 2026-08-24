@@ -10,6 +10,7 @@ import NotFound from '@/pages/NotFound';
 export default function PortalAuthRouter() {
   return (
     <Routes>
+      <Route element={<PortalLogin />} path="/" />
       <Route element={<PortalLogin />} path="/portal" />
       <Route element={<PortalLogin />} path="/portal/login" />
       <Route element={<Navigate to="/portal/login" replace />} path="/portal/logout" />
