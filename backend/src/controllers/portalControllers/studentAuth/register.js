@@ -55,6 +55,7 @@ const register = async (req, res) => {
   const tmp = new StudentPassword();
   const passwordHash = tmp.generateHash(salt, password);
   const { code, expires } = generateCode();
+  const telegramLinkToken = uniqueId() + uniqueId();
 
   await StudentPassword.findOneAndUpdate(
     { user: student._id },
@@ -67,6 +68,7 @@ const register = async (req, res) => {
       emailVerificationCodeExpires: expires,
       emailVerificationAttempts: 0,
       lastCodeSentAt: new Date(),
+      telegramLinkToken,
     },
     { upsert: true, new: true }
   ).exec();
@@ -81,7 +83,7 @@ const register = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    result: { email: normalizedEmail },
+    result: { email: normalizedEmail, telegramLinkToken },
     message: 'Tasdiqlash kodi emailingizga yuborildi.',
   });
 };

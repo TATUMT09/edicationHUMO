@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Form, Button, Input } from 'antd';
+import { Form, Button, Input, Divider } from 'antd';
+import { SendOutlined } from '@ant-design/icons';
 
 import useLanguage from '@/locale/useLanguage';
 import { portalVerifyCode, portalResendCode } from '@/redux/portalAuth/actions';
-import { selectPortalAuth } from '@/redux/portalAuth/selectors';
+import { selectPortalAuth, selectPendingTelegramLinkToken } from '@/redux/portalAuth/selectors';
 import Loading from '@/components/Loading';
 import AuthModule from '@/modules/AuthModule';
 
 const RESEND_COOLDOWN_SECONDS = 60;
+const TELEGRAM_BOT_USERNAME = 'HUMO_EDUKATION_bot';
 
 export default function PortalVerifyCodePage() {
   const translate = useLanguage();
   const { isLoading, isSuccess, pendingVerificationEmail } = useSelector(selectPortalAuth);
+  const telegramLinkToken = useSelector(selectPendingTelegramLinkToken);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [cooldown, setCooldown] = useState(0);
@@ -73,6 +76,26 @@ export default function PortalVerifyCodePage() {
           {cooldown > 0 ? `Qayta yuborish (${cooldown}s)` : 'Kodni qayta yuborish'}
         </Button>
       </Form>
+
+      {telegramLinkToken && (
+        <>
+          <Divider>yoki</Divider>
+          <p style={{ textAlign: 'center', marginBottom: 12 }}>
+            Email kelmayaptimi? Kodni Telegram orqali oling:
+          </p>
+          <Button
+            block
+            size="large"
+            icon={<SendOutlined />}
+            style={{ background: '#229ED9', color: '#fff', border: 'none' }}
+            href={`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${telegramLinkToken}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Telegram orqali kodni olish
+          </Button>
+        </>
+      )}
     </Loading>
   );
 

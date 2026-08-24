@@ -38,6 +38,12 @@ const StudentPasswordSchema = new Schema({
   },
   lastCodeSentAt: Date,
 
+  // Deep-link payload for "get this code via Telegram instead" — Telegram's
+  // Bot API can't push a message to an arbitrary user, only reply once they
+  // /start the bot, so we hand them a token via t.me/<bot>?start=<token>
+  // that the bot exchanges for whichever code is currently pending.
+  telegramLinkToken: String,
+
   resetCode: String,
   resetCodeExpires: Date,
   resetCodeAttempts: {

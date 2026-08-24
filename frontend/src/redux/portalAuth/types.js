@@ -7,5 +7,9 @@ export const REQUEST_FAILED = 'PORTAL_AUTH_REQUEST_FAILED';
 // which email is mid-verification.
 export const VERIFICATION_PENDING = 'PORTAL_AUTH_VERIFICATION_PENDING';
 
+// Refreshed whenever the code is resent — the Telegram deep-link token
+// changes with every new code, independent of the loading/success cycle.
+export const TELEGRAM_LINK_TOKEN_UPDATED = 'PORTAL_AUTH_TELEGRAM_LINK_TOKEN_UPDATED';
+
 export const LOGOUT_SUCCESS = 'PORTAL_AUTH_LOGOUT_SUCCESS';
 export const LOGOUT_FAILED = 'PORTAL_AUTH_LOGOUT_FAILED';

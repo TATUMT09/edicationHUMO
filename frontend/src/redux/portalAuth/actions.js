@@ -20,7 +20,10 @@ export const portalRegister =
     const data = await portalRequest.register(registerData);
 
     if (data.success === true) {
-      dispatch({ type: actionTypes.VERIFICATION_PENDING, payload: registerData.email });
+      dispatch({
+        type: actionTypes.VERIFICATION_PENDING,
+        payload: { email: registerData.email, telegramLinkToken: data.result?.telegramLinkToken },
+      });
     } else {
       dispatch({ type: actionTypes.REQUEST_FAILED });
     }
@@ -41,8 +44,15 @@ export const portalVerifyCode =
 
 export const portalResendCode =
   ({ email }) =>
-  async () => {
-    return await portalRequest.resendCode({ email });
+  async (dispatch) => {
+    const data = await portalRequest.resendCode({ email });
+    if (data.success === true && data.result?.telegramLinkToken) {
+      dispatch({
+        type: actionTypes.TELEGRAM_LINK_TOKEN_UPDATED,
+        payload: data.result.telegramLinkToken,
+      });
+    }
+    return data;
   };
 
 export const portalLogin =

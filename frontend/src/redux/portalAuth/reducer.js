@@ -6,6 +6,7 @@ const INITIAL_STATE = {
   isLoading: false,
   isSuccess: false,
   pendingVerificationEmail: null,
+  pendingTelegramLinkToken: null,
 };
 
 const portalAuthReducer = (state = INITIAL_STATE, action) => {
@@ -20,6 +21,7 @@ const portalAuthReducer = (state = INITIAL_STATE, action) => {
       return {
         ...INITIAL_STATE,
         pendingVerificationEmail: state.pendingVerificationEmail,
+        pendingTelegramLinkToken: state.pendingTelegramLinkToken,
       };
     case actionTypes.REQUEST_SUCCESS:
       return {
@@ -28,12 +30,19 @@ const portalAuthReducer = (state = INITIAL_STATE, action) => {
         isLoading: false,
         isSuccess: true,
         pendingVerificationEmail: null,
+        pendingTelegramLinkToken: null,
       };
     case actionTypes.VERIFICATION_PENDING:
       return {
         ...INITIAL_STATE,
         isLoading: false,
-        pendingVerificationEmail: action.payload,
+        pendingVerificationEmail: action.payload.email,
+        pendingTelegramLinkToken: action.payload.telegramLinkToken,
+      };
+    case actionTypes.TELEGRAM_LINK_TOKEN_UPDATED:
+      return {
+        ...state,
+        pendingTelegramLinkToken: action.payload,
       };
     case actionTypes.LOGOUT_SUCCESS:
       return INITIAL_STATE;

@@ -61,8 +61,15 @@ function startBot() {
 
   bot = new TelegramBot(token, { polling: true });
 
-  bot.onText(/^\/start/, async (msg) => {
+  bot.onText(/^\/start\s*(.*)/, async (msg, match) => {
     const chatId = msg.chat.id;
+    const payload = (match[1] || '').trim();
+
+    if (payload) {
+      const delivered = await tryDeliverStudentCode(chatId, payload);
+      if (delivered) return;
+    }
+
     await bot.sendMessage(
       chatId,
       'Assalomu alaykum! HUMO Education botiga xush kelibsiz.\n\n' +
@@ -109,6 +116,51 @@ function startBot() {
   });
 
   console.log('🤖 Telegram bot started');
+}
+
+// Deep-link fallback: t.me/<bot>?start=<telegramLinkToken> — the portal
+// hands this token out alongside an email-delivered code (see
+// studentAuth/register.js and resendCode.js) so a student whose email
+// provider is silently dropping our mail can still get the code, without
+// the bot ever needing to message someone who hasn't opened a chat first.
+async function tryDeliverStudentCode(chatId, token) {
+  const Student = mongoose.model('Student');
+  const StudentPassword = mongoose.model('StudentPassword');
+
+  const studentPassword = await StudentPassword.findOne({
+    telegramLinkToken: token,
+    removed: false,
+  });
+  if (!studentPassword) return false;
+
+  const now = new Date();
+  const hasEmailCode =
+    studentPassword.emailVerificationCode &&
+    studentPassword.emailVerificationCodeExpires > now;
+  const hasResetCode = studentPassword.resetCode && studentPassword.resetCodeExpires > now;
+
+  const code = hasEmailCode ? studentPassword.emailVerificationCode : studentPassword.resetCode;
+  if (!hasEmailCode && !hasResetCode) {
+    await bot.sendMessage(
+      chatId,
+      "❌ Bu havolaning muddati tugagan. Saytga qaytib, kodni qaytadan so'rang."
+    );
+    return true;
+  }
+
+  const student = await Student.findById(studentPassword.user);
+  if (student) {
+    student.telegramChatId = String(chatId);
+    await student.save();
+  }
+
+  await bot.sendMessage(
+    chatId,
+    `Assalomu alaykum${student ? ', ' + student.name : ''}!\n\n` +
+      `Tasdiqlash kodingiz: *${code}*\n\nBu kodni saytga qaytib kiriting.`,
+    { parse_mode: 'Markdown' }
+  );
+  return true;
 }
 
 async function tryAdminLogin(chatId, email, password) {

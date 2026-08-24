@@ -22,6 +22,7 @@ const studentSchema = new Schema(
     lastName: { type: String, required: true },
     dateOfBirth: { type: Date },
     phone: { type: String },
+    telegramChatId: { type: String },
     photo: {
       type: String,
       trim: true,

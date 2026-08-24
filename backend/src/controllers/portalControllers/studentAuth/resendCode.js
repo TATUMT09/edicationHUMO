@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { generate: uniqueId } = require('shortid');
 
 const generateCode = require('@/utils/generateCode');
 const sendMail = require('@/controllers/middlewaresControllers/createAuthMiddleware/sendMail');
@@ -52,6 +53,7 @@ const resendCode = async (req, res) => {
   }
 
   const { code, expires } = generateCode();
+  const telegramLinkToken = uniqueId() + uniqueId();
 
   await StudentPassword.findOneAndUpdate(
     { user: student._id },
@@ -60,6 +62,7 @@ const resendCode = async (req, res) => {
       emailVerificationCodeExpires: expires,
       emailVerificationAttempts: 0,
       lastCodeSentAt: new Date(),
+      telegramLinkToken,
     }
   ).exec();
 
@@ -71,7 +74,11 @@ const resendCode = async (req, res) => {
     type: 'emailVerificationCode',
   });
 
-  return res.status(200).json({ success: true, result: null, message: 'Kod qaytadan yuborildi.' });
+  return res.status(200).json({
+    success: true,
+    result: { telegramLinkToken },
+    message: 'Kod qaytadan yuborildi.',
+  });
 };
 
 module.exports = resendCode;
