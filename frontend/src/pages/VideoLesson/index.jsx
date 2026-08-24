@@ -1,5 +1,5 @@
 import CrudModule from '@/modules/CrudModule/CrudModule';
-import DynamicForm from '@/forms/DynamicForm';
+import VideoLessonForm from './VideoLessonForm';
 import { fields } from './config';
 
 import useLanguage from '@/locale/useLanguage';
@@ -31,8 +31,8 @@ export default function VideoLesson() {
   };
   return (
     <CrudModule
-      createForm={<DynamicForm fields={fields} />}
-      updateForm={<DynamicForm fields={fields} />}
+      createForm={<VideoLessonForm />}
+      updateForm={<VideoLessonForm />}
       config={config}
     />
   );

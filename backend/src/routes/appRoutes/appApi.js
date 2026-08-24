@@ -4,6 +4,8 @@ const router = express.Router();
 
 const appControllers = require('@/controllers/appControllers');
 const { routesList } = require('@/models/utils');
+const { singleStorageUpload } = require('@/middlewares/uploadMiddleware');
+const videoLessonUpload = require('@/controllers/appControllers/videoLessonUpload');
 
 const routerApp = (entity, controller) => {
   router.route(`/${entity}/create`).post(catchErrors(controller['create']));
@@ -22,6 +24,13 @@ const routerApp = (entity, controller) => {
 
   if (entity === 'quote') {
     router.route(`/${entity}/convert/:id`).get(catchErrors(controller['convert']));
+  }
+
+  if (entity === 'videolesson') {
+    router.route(`/${entity}/upload`).post(
+      singleStorageUpload({ entity: 'videolesson', fieldName: 'videoUrl', fileType: 'video' }),
+      catchErrors(videoLessonUpload)
+    );
   }
 };
 

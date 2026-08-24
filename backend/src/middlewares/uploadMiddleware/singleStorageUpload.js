@@ -1,3 +1,4 @@
+const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
 const { slugify } = require('transliteration');
@@ -12,7 +13,11 @@ const singleStorageUpload = ({
 }) => {
   var diskStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, `src/public/uploads/${entity}`);
+      const dir = `src/public/uploads/${entity}`;
+      // multer's diskStorage never creates its destination — the first
+      // upload for a brand-new entity would otherwise fail with ENOENT.
+      fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
     },
     filename: function (req, file, cb) {
       try {
