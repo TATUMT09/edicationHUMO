@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button, Input, DatePicker } from 'antd';
@@ -11,11 +11,23 @@ import { selectPortalAuth } from '@/redux/portalAuth/selectors';
 import Loading from '@/components/Loading';
 import AuthModule from '@/modules/AuthModule';
 
+const PURPOSE_OPTIONS = [
+  { value: 'pupil', label: '👦 O\'quvchiman' },
+  { value: 'applicant', label: '🎓 Abituriyentman' },
+  { value: 'student_higher', label: '👨‍🎓 Talabaman' },
+  { value: 'teacher', label: '👨‍🏫 O\'qituvchiman' },
+  { value: 'parent', label: '👨‍👩‍👧 Farzandim uchun' },
+  { value: 'new_skill', label: '💻 Yangi kasb o\'rganaman' },
+  { value: 'language', label: '🌎 Til o\'rganaman' },
+  { value: 'self_improve', label: '🧠 Bilimimni oshiraman' },
+];
+
 export default function PortalRegisterPage() {
   const translate = useLanguage();
   const { isLoading, pendingVerificationEmail } = useSelector(selectPortalAuth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [purpose, setPurpose] = useState(null);
 
   const onFinish = (values) => {
     dispatch(
@@ -23,6 +35,7 @@ export default function PortalRegisterPage() {
         registerData: {
           ...values,
           dateOfBirth: values.dateOfBirth.format('YYYY-MM-DD'),
+          purpose,
         },
       })
     );
@@ -35,6 +48,20 @@ export default function PortalRegisterPage() {
   const FormContainer = () => (
     <Loading isLoading={isLoading}>
       <Form layout="vertical" name="portal_register" onFinish={onFinish}>
+        <Form.Item label="Platformadan nima maqsadda foydalanmoqchisiz? (ixtiyoriy)">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {PURPOSE_OPTIONS.map((opt) => (
+              <Button
+                key={opt.value}
+                size="small"
+                type={purpose === opt.value ? 'primary' : 'default'}
+                onClick={() => setPurpose(purpose === opt.value ? null : opt.value)}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+        </Form.Item>
         <Form.Item label="Ism" name="firstName" rules={[{ required: true }]}>
           <Input prefix={<UserOutlined />} size="large" />
         </Form.Item>

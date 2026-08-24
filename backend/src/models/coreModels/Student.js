@@ -23,6 +23,21 @@ const studentSchema = new Schema(
     dateOfBirth: { type: Date },
     phone: { type: String },
     telegramChatId: { type: String },
+    // Captured once at registration (onboarding "what's this for?" step) —
+    // purely for personalizing the portal's home dashboard, never enforced.
+    purpose: {
+      type: String,
+      enum: [
+        'pupil',
+        'applicant',
+        'student_higher',
+        'teacher',
+        'parent',
+        'new_skill',
+        'language',
+        'self_improve',
+      ],
+    },
     photo: {
       type: String,
       trim: true,

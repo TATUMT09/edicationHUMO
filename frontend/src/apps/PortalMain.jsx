@@ -12,6 +12,7 @@ import {
   StarOutlined,
   GiftOutlined,
   ReadOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
 
 import { selectCurrentStudent } from '@/redux/portalAuth/selectors';
@@ -68,6 +69,11 @@ export default function PortalMain() {
       key: 'library',
       icon: <ReadOutlined />,
       label: <Link to="/portal/library">Kutubxona</Link>,
+    },
+    {
+      key: 'mistakes',
+      icon: <CloseCircleOutlined />,
+      label: <Link to="/portal/mistakes">Xatolarim</Link>,
     },
     {
       key: 'history',

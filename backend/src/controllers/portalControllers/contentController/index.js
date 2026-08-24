@@ -5,6 +5,7 @@ const getTestToTake = require('./getTestToTake');
 const getVideo = require('./getVideo');
 const getBook = require('./getBook');
 const getLibrary = require('./getLibrary');
+const search = require('./search');
 
 module.exports = {
   listSubjects,
@@ -14,4 +15,5 @@ module.exports = {
   getVideo,
   getBook,
   getLibrary,
+  search,
 };

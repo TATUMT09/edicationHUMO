@@ -3,7 +3,7 @@ import portalErrorHandler from './portalErrorHandler';
 import successHandler from './successHandler';
 
 const portalRequest = {
-  register: async ({ firstName, lastName, dateOfBirth, email, password }) => {
+  register: async ({ firstName, lastName, dateOfBirth, email, password, purpose }) => {
     try {
       const response = await portalAxios.post('register', {
         firstName,
@@ -11,6 +11,7 @@ const portalRequest = {
         dateOfBirth,
         email,
         password,
+        purpose,
       });
       successHandler(response, { notifyOnSuccess: true, notifyOnFailed: true });
       return response.data;
@@ -215,6 +216,22 @@ const portalRequest = {
   getMyRewardOrders: async () => {
     try {
       const response = await portalAxios.get('reward-orders');
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  search: async (q) => {
+    try {
+      const response = await portalAxios.get('search', { params: { q } });
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
+  getMistakes: async () => {
+    try {
+      const response = await portalAxios.get('mistakes');
       return response.data;
     } catch (error) {
       return portalErrorHandler(error);

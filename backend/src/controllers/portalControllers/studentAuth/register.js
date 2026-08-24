@@ -9,7 +9,7 @@ const register = async (req, res) => {
   const Student = mongoose.model('Student');
   const StudentPassword = mongoose.model('StudentPassword');
 
-  const { firstName, lastName, dateOfBirth, email, password } = req.body;
+  const { firstName, lastName, dateOfBirth, email, password, purpose } = req.body;
 
   const objectSchema = Joi.object({
     firstName: Joi.string().required(),
@@ -19,9 +19,28 @@ const register = async (req, res) => {
       .email({ tlds: { allow: true } })
       .required(),
     password: Joi.string().min(6).required(),
+    purpose: Joi.string()
+      .valid(
+        'pupil',
+        'applicant',
+        'student_higher',
+        'teacher',
+        'parent',
+        'new_skill',
+        'language',
+        'self_improve'
+      )
+      .optional(),
   });
 
-  const { error } = objectSchema.validate({ firstName, lastName, dateOfBirth, email, password });
+  const { error } = objectSchema.validate({
+    firstName,
+    lastName,
+    dateOfBirth,
+    email,
+    password,
+    purpose,
+  });
   if (error) {
     return res.status(409).json({
       success: false,
@@ -46,9 +65,16 @@ const register = async (req, res) => {
     student.firstName = firstName;
     student.lastName = lastName;
     student.dateOfBirth = dateOfBirth;
+    if (purpose) student.purpose = purpose;
     await student.save();
   } else {
-    student = await new Student({ firstName, lastName, dateOfBirth, email: normalizedEmail }).save();
+    student = await new Student({
+      firstName,
+      lastName,
+      dateOfBirth,
+      email: normalizedEmail,
+      purpose,
+    }).save();
   }
 
   const salt = uniqueId();

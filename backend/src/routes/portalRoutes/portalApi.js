@@ -9,6 +9,7 @@ const statsController = require('@/controllers/portalControllers/statsController
 const leaderboardController = require('@/controllers/portalControllers/leaderboardController');
 const starsController = require('@/controllers/portalControllers/starsController');
 const rewardController = require('@/controllers/portalControllers/rewardController');
+const mistakesController = require('@/controllers/portalControllers/mistakesController');
 
 router.route('/logout').post(catchErrors(studentAuth.logout));
 
@@ -17,6 +18,8 @@ router.route('/subjects/:subjectId/content').get(catchErrors(contentController.l
 router.route('/videos/:videoId').get(catchErrors(contentController.getVideo));
 router.route('/books/:bookId').get(catchErrors(contentController.getBook));
 router.route('/library').get(catchErrors(contentController.getLibrary));
+router.route('/search').get(catchErrors(contentController.search));
+router.route('/mistakes').get(catchErrors(mistakesController.listMistakes));
 router.route('/tests/:testId/meta').get(catchErrors(contentController.getTestMeta));
 router.route('/tests/:testId/take').get(catchErrors(contentController.getTestToTake));
 
