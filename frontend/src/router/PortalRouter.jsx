@@ -5,6 +5,7 @@ const Subjects = lazy(() => import('@/pages/Portal/Subjects'));
 const Levels = lazy(() => import('@/pages/Portal/Levels'));
 const ContentList = lazy(() => import('@/pages/Portal/ContentList'));
 const VideoPlayer = lazy(() => import('@/pages/Portal/VideoPlayer'));
+const BookViewer = lazy(() => import('@/pages/Portal/BookViewer'));
 const TestTake = lazy(() => import('@/pages/Portal/TestTake'));
 const AttemptDetail = lazy(() => import('@/pages/Portal/AttemptDetail'));
 const History = lazy(() => import('@/pages/Portal/History'));
@@ -20,6 +21,7 @@ export default function PortalRouter() {
       <Route path="/portal/subjects/:subjectId" element={<Levels />} />
       <Route path="/portal/subjects/:subjectId/:level" element={<ContentList />} />
       <Route path="/portal/video/:videoId" element={<VideoPlayer />} />
+      <Route path="/portal/books/:bookId" element={<BookViewer />} />
       <Route path="/portal/tests/:testId" element={<TestTake />} />
       <Route path="/portal/attempts/:attemptId" element={<AttemptDetail />} />
       <Route path="/portal/history" element={<History />} />

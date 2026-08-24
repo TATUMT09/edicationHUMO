@@ -7,6 +7,7 @@ const appControllers = require('@/controllers/appControllers');
 const { routesList } = require('@/models/utils');
 const { singleStorageUpload } = require('@/middlewares/uploadMiddleware');
 const videoLessonUpload = require('@/controllers/appControllers/videoLessonUpload');
+const bookUpload = require('@/controllers/appControllers/bookUpload');
 const testAiImport = require('@/controllers/appControllers/testAiImport');
 
 // In-memory only — the .docx is read once to extract text for the AI
@@ -36,6 +37,13 @@ const routerApp = (entity, controller) => {
     router.route(`/${entity}/upload`).post(
       singleStorageUpload({ entity: 'videolesson', fieldName: 'videoUrl', fileType: 'video' }),
       catchErrors(videoLessonUpload)
+    );
+  }
+
+  if (entity === 'book') {
+    router.route(`/${entity}/upload`).post(
+      singleStorageUpload({ entity: 'book', fieldName: 'fileUrl', fileType: 'pdf' }),
+      catchErrors(bookUpload)
     );
   }
 

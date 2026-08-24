@@ -270,6 +270,12 @@ const lang = {
   add_new_video_lesson: "Yangi video dars qo'shish",
   video_url: 'Video havolasi',
   duration_seconds: "Davomiyligi (soniya)",
+  book: 'Kitob',
+  books: 'Kitoblar',
+  book_list: "Kitoblar ro'yxati",
+  add_new_book: "Yangi kitob qo'shish",
+  author: 'Muallif',
+  file_url: 'Fayl havolasi',
   history: 'Tarix',
   statistics: 'Statistika',
 

@@ -7,6 +7,7 @@ const listContent = async (req, res) => {
   const Test = mongoose.model('Test');
   const Question = mongoose.model('Question');
   const VideoLesson = mongoose.model('VideoLesson');
+  const Book = mongoose.model('Book');
   const Subject = mongoose.model('Subject');
 
   const { subjectId } = req.params;
@@ -15,7 +16,7 @@ const listContent = async (req, res) => {
   if (level && !VALID_LEVELS.includes(level)) {
     return res.status(400).json({ success: false, result: null, message: "Noto'g'ri daraja." });
   }
-  if (type && type !== 'video' && !TEST_TYPES.includes(type)) {
+  if (type && type !== 'video' && type !== 'book' && !TEST_TYPES.includes(type)) {
     return res.status(400).json({ success: false, result: null, message: "Noto'g'ri kontent turi." });
   }
 
@@ -28,10 +29,12 @@ const listContent = async (req, res) => {
   if (level) baseQuery.level = level;
 
   const wantsVideos = !type || type === 'video';
+  const wantsBooks = !type || type === 'book';
   const wantsTests = !type || TEST_TYPES.includes(type);
 
-  const [videos, tests] = await Promise.all([
+  const [videos, books, tests] = await Promise.all([
     wantsVideos ? VideoLesson.find(baseQuery).sort({ order: 1, title: 1 }).exec() : [],
+    wantsBooks ? Book.find(baseQuery).sort({ order: 1, title: 1 }).exec() : [],
     wantsTests
       ? Test.find({ ...baseQuery, ...(type ? { testType: type } : {}) })
           .sort({ order: 1, title: 1 })
@@ -48,7 +51,7 @@ const listContent = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    result: { subject, videos, tests: testsWithCounts },
+    result: { subject, videos, books, tests: testsWithCounts },
     message: 'Kontent ro\'yxati',
   });
 };

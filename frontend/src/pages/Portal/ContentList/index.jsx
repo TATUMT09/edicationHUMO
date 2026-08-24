@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, List, Spin, Empty, Tag, Segmented } from 'antd';
-import { PlayCircleOutlined, FileTextOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, FileTextOutlined, ReadOutlined } from '@ant-design/icons';
 
 import portalRequest from '@/request/portalRequest';
 
@@ -11,7 +11,7 @@ const TEST_TYPE_LABELS = { closed: 'Yopiq test', open: 'Ochiq test', quiz: 'Kviz
 export default function PortalContentListPage() {
   const { subjectId, level } = useParams();
   const navigate = useNavigate();
-  const [data, setData] = useState({ subject: null, videos: [], tests: [] });
+  const [data, setData] = useState({ subject: null, videos: [], books: [], tests: [] });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
@@ -28,8 +28,15 @@ export default function PortalContentListPage() {
 
   const items = [
     ...data.videos.map((v) => ({ ...v, kind: 'video' })),
+    ...(data.books || []).map((b) => ({ ...b, kind: 'book' })),
     ...data.tests.map((t) => ({ ...t, kind: t.testType })),
   ].filter((item) => filter === 'all' || item.kind === filter);
+
+  const pathFor = (item) => {
+    if (item.kind === 'video') return `/portal/video/${item._id}`;
+    if (item.kind === 'book') return `/portal/books/${item._id}`;
+    return `/portal/tests/${item._id}`;
+  };
 
   return (
     <div>
@@ -43,6 +50,7 @@ export default function PortalContentListPage() {
         options={[
           { label: 'Hammasi', value: 'all' },
           { label: 'Video darslar', value: 'video' },
+          { label: 'Kitoblar', value: 'book' },
           { label: 'Yopiq test', value: 'closed' },
           { label: 'Ochiq test', value: 'open' },
           { label: 'Kviz', value: 'quiz' },
@@ -56,18 +64,13 @@ export default function PortalContentListPage() {
           dataSource={items}
           renderItem={(item) => (
             <List.Item>
-              <Card
-                hoverable
-                onClick={() =>
-                  navigate(
-                    item.kind === 'video' ? `/portal/video/${item._id}` : `/portal/tests/${item._id}`
-                  )
-                }
-              >
+              <Card hoverable onClick={() => navigate(pathFor(item))}>
                 <Card.Meta
                   avatar={
                     item.kind === 'video' ? (
                       <PlayCircleOutlined style={{ fontSize: 24, color: '#1640D6' }} />
+                    ) : item.kind === 'book' ? (
+                      <ReadOutlined style={{ fontSize: 24, color: '#1640D6' }} />
                     ) : (
                       <FileTextOutlined style={{ fontSize: 24, color: '#1640D6' }} />
                     )
@@ -76,6 +79,8 @@ export default function PortalContentListPage() {
                   description={
                     item.kind === 'video' ? (
                       <Tag>Video dars</Tag>
+                    ) : item.kind === 'book' ? (
+                      <Tag>{item.author || 'Kitob'}</Tag>
                     ) : (
                       <>
                         <Tag>{TEST_TYPE_LABELS[item.testType]}</Tag>

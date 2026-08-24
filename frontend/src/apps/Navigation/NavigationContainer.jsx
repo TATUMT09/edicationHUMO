@@ -28,6 +28,7 @@ import {
   QuestionCircleOutlined,
   PlayCircleOutlined,
   CloudUploadOutlined,
+  ReadOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -132,6 +133,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'video-lesson',
       icon: <PlayCircleOutlined />,
       label: <Link to={'/video-lesson'}>{translate('video_lessons')}</Link>,
+    },
+    {
+      key: 'book',
+      icon: <ReadOutlined />,
+      label: <Link to={'/book'}>{translate('books')}</Link>,
     },
   ].filter(Boolean);
 

@@ -108,6 +108,14 @@ const portalRequest = {
       return portalErrorHandler(error);
     }
   },
+  getBook: async (bookId) => {
+    try {
+      const response = await portalAxios.get(`books/${bookId}`);
+      return response.data;
+    } catch (error) {
+      return portalErrorHandler(error);
+    }
+  },
   getTestToTake: async (testId) => {
     try {
       const response = await portalAxios.get(`tests/${testId}/take`);

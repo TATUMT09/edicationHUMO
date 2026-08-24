@@ -29,6 +29,7 @@ const Test = lazy(() => import('@/pages/Test'));
 const TestAiImport = lazy(() => import('@/pages/Test/AiImport'));
 const Question = lazy(() => import('@/pages/Question'));
 const VideoLesson = lazy(() => import('@/pages/VideoLesson'));
+const Book = lazy(() => import('@/pages/Book'));
 
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
 
@@ -116,6 +117,10 @@ let routes = {
     {
       path: '/video-lesson',
       element: <VideoLesson />,
+    },
+    {
+      path: '/book',
+      element: <Book />,
     },
 
     {
