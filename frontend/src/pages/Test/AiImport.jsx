@@ -124,8 +124,9 @@ export default function TestAiImport() {
       <div>
         <h2>AI orqali test yuklash</h2>
         <p>
-          .docx faylni yuklang — sun'iy intellekt savollarni va to'g'ri javoblarni avtomatik
-          aniqlab beradi (qalin yoki tagiga chizilgan variant — to'g'ri javob deb hisoblanadi).
+          .docx faylni yuklang — sun'iy intellekt savollarni avtomatik ajratib oladi. To'g'ri
+          javobni belgilash uchun variant matniga <b>yulduzcha (*)</b> qo'ying — masalan:{' '}
+          <code>B) H2O *</code>.
         </p>
         <Spin spinning={parsing} tip="AI o'qiyapti, biroz kuting...">
           <Dragger

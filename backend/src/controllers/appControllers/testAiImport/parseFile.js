@@ -18,11 +18,11 @@ Vazifangiz: shu matndan barcha savollarni, ularning javob variantlarini va TO'G'
   ]
 }
 
-MUHIM QOIDALAR:
-- To'g'ri javobni aniqlash uchun quyidagi belgilarga e'tibor bering: <strong>/<b> (qalin), <u> (tagiga chizilgan) teglar, "Javob:", "To'g'ri javob:", yulduzcha (*) belgisi, yoki variant oldida "✓" kabi belgilar. Ko'pincha o'qituvchilar to'g'ri javobni QALIN yoki TAGIGA CHIZILGAN qilib belgilaydi.
-- Agar bir nechta variant to'g'ri deb belgilangan bo'lsa — questionType "multi_choice" bo'lsin.
-- Agar savolda variantlar umuman bo'lmasa (faqat ochiq savol) — questionType "open_response", "options" bo'sh massiv, "correctAnswerText" ga hujjatdagi namunaviy/to'g'ri javobni yozing.
-- Agar to'g'ri javobni ANIQLAB bo'lmasa (hech qanday belgi yo'q) — barcha variantlarning "isCorrect" ini false qiling va savol matniga hech narsa qo'shmang (admin keyin qo'lda belgilaydi).
+MUHIM QOIDA — TO'G'RI JAVOBNI ANIQLASH (buni taxmin qilmang, faqat shu belgiga qarang):
+- Variant matnida yoki yonida **yulduzcha (*) belgisi** bo'lsa — o'sha variant TO'G'RI javob ("isCorrect": true). Yulduzcha belgisini natijadagi "text" maydonidan olib tashlang (faqat belgi sifatida ishlatiladi, matnga kirmasin).
+- Hech qanday variantda "*" belgisi bo'lmasa — barcha variantlarning "isCorrect" ini false qiling (taxmin qilmang, boshqa belgilarga (qalin, tagiga chizilgan va h.k.) asoslanmang).
+- Agar bir nechta variantda "*" bo'lsa — questionType "multi_choice" bo'lsin, aks holda "single_choice".
+- Agar savolda variantlar umuman bo'lmasa (faqat ochiq savol) — questionType "open_response", "options" bo'sh massiv, "correctAnswerText" ga hujjatdagi javobni yozing.
 - Faqat JSON qaytaring, boshqa hech qanday matn (izoh, tushuntirish) qo'shmang.`;
 
 const parseFile = async (req, res) => {
