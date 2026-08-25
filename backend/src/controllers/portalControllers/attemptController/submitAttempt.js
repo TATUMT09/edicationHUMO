@@ -47,7 +47,8 @@ const submitAttempt = async (req, res) => {
     });
   }
 
-  const answersByQuestionId = new Map(answers.map((a) => [String(a.question), a]));
+  const safeAnswers = Array.isArray(answers) ? answers : [];
+  const answersByQuestionId = new Map(safeAnswers.map((a) => [String(a?.question), a]));
 
   let score = 0;
   let maxScore = 0;

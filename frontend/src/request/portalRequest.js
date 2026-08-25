@@ -133,11 +133,12 @@ const portalRequest = {
       return portalErrorHandler(error);
     }
   },
-  checkAnswer: async (testId, { questionId, selectedOptionIds }) => {
+  checkAnswer: async (testId, { questionId, selectedOptionIds, sessionToken }) => {
     try {
       const response = await portalAxios.post(`tests/${testId}/check-answer`, {
         questionId,
         selectedOptionIds,
+        sessionToken,
       });
       return response.data;
     } catch (error) {

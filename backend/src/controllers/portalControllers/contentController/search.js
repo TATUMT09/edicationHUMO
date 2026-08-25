@@ -8,7 +8,9 @@ const search = async (req, res) => {
   const Book = mongoose.model('Book');
   const VideoLesson = mongoose.model('VideoLesson');
 
-  const q = (req.query.q || '').trim();
+  // req.query.q could be a nested object (Express parses ?q[$ne]=x into
+  // one) instead of a string — never let a non-string reach RegExp/Mongo.
+  const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
   if (q.length < 2) {
     return res.status(200).json({
       success: true,

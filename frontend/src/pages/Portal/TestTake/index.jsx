@@ -112,6 +112,7 @@ export default function PortalTestTakePage() {
     const data = await portalRequest.checkAnswer(testId, {
       questionId: q._id,
       selectedOptionIds,
+      sessionToken,
     });
     setChecking((prev) => ({ ...prev, [q._id]: false }));
     if (data.success) {

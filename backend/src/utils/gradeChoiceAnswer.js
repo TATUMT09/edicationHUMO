@@ -6,7 +6,13 @@ const gradeChoiceAnswer = (question, submittedAnswer) => {
   const correctIds = new Set(
     (question.options || []).filter((opt) => opt.isCorrect).map((opt) => String(opt._id))
   );
-  const selectedIds = new Set((submittedAnswer?.selectedOptionIds || []).map(String));
+  // A malformed request (e.g. selectedOptionIds sent as a string/object
+  // instead of an array) must grade as "wrong", never throw — an uncaught
+  // TypeError here would 500 and leak internal error details to the client.
+  const rawSelected = Array.isArray(submittedAnswer?.selectedOptionIds)
+    ? submittedAnswer.selectedOptionIds
+    : [];
+  const selectedIds = new Set(rawSelected.map(String));
 
   const isCorrect =
     correctIds.size > 0 &&
