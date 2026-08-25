@@ -22,6 +22,24 @@ const submitAttempt = async (req, res) => {
     return res.status(404).json({ success: false, result: null, message: 'Test topilmadi.' });
   }
 
+  // Tests are single-attempt. Checked here (not just hidden by the
+  // frontend) so a resubmitted/replayed request can't rack up a second
+  // attempt (and a second star payout) for the same test.
+  const alreadyAttempted = await Attempt.findOne({
+    student: req.student._id,
+    test: testId,
+    removed: false,
+  })
+    .select('_id')
+    .exec();
+  if (alreadyAttempted) {
+    return res.status(409).json({
+      success: false,
+      result: { attemptId: alreadyAttempted._id },
+      message: 'Siz bu testni allaqachon ishlagansiz.',
+    });
+  }
+
   // The student may have been served only a random subset of the test's
   // full question bank (count-tier chooser) — grade against exactly that
   // signed subset, never the whole bank, and never a client-supplied list.

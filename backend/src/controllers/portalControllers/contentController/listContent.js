@@ -9,6 +9,7 @@ const listContent = async (req, res) => {
   const VideoLesson = mongoose.model('VideoLesson');
   const Book = mongoose.model('Book');
   const Subject = mongoose.model('Subject');
+  const Attempt = mongoose.model('Attempt');
 
   const { subjectId } = req.params;
   const { level, type } = req.query;
@@ -42,10 +43,29 @@ const listContent = async (req, res) => {
       : [],
   ]);
 
+  // Tests are single-attempt — once a student has submitted one, the
+  // portal shows their result instead of letting them start again. Look
+  // this up in one query rather than per-test to avoid N+1.
+  const myAttempts = await Attempt.find({
+    student: req.student._id,
+    test: { $in: tests.map((t) => t._id) },
+    removed: false,
+  })
+    .select('test scorePercent')
+    .exec();
+  const attemptByTest = new Map(myAttempts.map((a) => [String(a.test), a]));
+
   const testsWithCounts = await Promise.all(
     tests.map(async (test) => {
       const questionCount = await Question.countDocuments({ test: test._id, removed: false });
-      return { ...test.toObject(), questionCount };
+      const existingAttempt = attemptByTest.get(String(test._id));
+      return {
+        ...test.toObject(),
+        questionCount,
+        completedAttempt: existingAttempt
+          ? { _id: existingAttempt._id, scorePercent: existingAttempt.scorePercent }
+          : null,
+      };
     })
   );
 

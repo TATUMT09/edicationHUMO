@@ -49,4 +49,13 @@ schema.plugin(require('mongoose-autopopulate'));
 
 schema.index({ student: 1, test: 1, submittedAt: -1 });
 
+// Tests are single-attempt. This is the actual enforcement (the app-level
+// check in submitAttempt.js can't stop two concurrent requests from both
+// passing it) — partial so a soft-removed attempt doesn't block a
+// legitimate reset.
+schema.index(
+  { student: 1, test: 1 },
+  { unique: true, partialFilterExpression: { removed: false } }
+);
+
 module.exports = mongoose.model('Attempt', schema);

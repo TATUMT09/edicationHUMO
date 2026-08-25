@@ -41,12 +41,23 @@ export default function PortalTestTakePage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(null);
   const submittingRef = useRef(false);
+  const advanceTimeoutRef = useRef(null);
+
+  useEffect(() => () => {
+    if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current);
+  }, []);
 
   useEffect(() => {
     (async () => {
       setLoadingMeta(true);
       const data = await portalRequest.getTestMeta(testId);
       if (data.success) {
+        // Single-attempt: if this test is already done, skip straight to
+        // the result instead of offering to take it again.
+        if (data.result.existingAttempt) {
+          navigate(`/portal/attempts/${data.result.existingAttempt._id}`, { replace: true });
+          return;
+        }
         setMeta(data.result);
         setChosenCount(data.result.allowedTiers[data.result.allowedTiers.length - 1] || null);
       }
@@ -100,6 +111,10 @@ export default function PortalTestTakePage() {
           rankAfter: data.result.rankAfter,
         },
       });
+    } else if (data.result?.attemptId) {
+      // Already-attempted race (e.g. a resubmitted request) — go to the
+      // existing result instead of just showing an error.
+      navigate(`/portal/attempts/${data.result.attemptId}`, { replace: true });
     } else {
       submittingRef.current = false;
       message.error(data.message || 'Xatolik yuz berdi');
@@ -144,12 +159,27 @@ export default function PortalTestTakePage() {
   }, [timeLeft, timedMode]);
 
   const goToNext = () => {
+    if (advanceTimeoutRef.current) {
+      clearTimeout(advanceTimeoutRef.current);
+      advanceTimeoutRef.current = null;
+    }
     if (currentIndex >= questions.length - 1) {
       onSubmit();
       return;
     }
     setCurrentIndex((i) => i + 1);
     setTimeLeft(test.timePerQuestionSeconds);
+  };
+
+  // After picking a single-answer option in timed mode, move on automatically
+  // instead of making the student also tap "Keyingisi" — but give them a
+  // beat to see their selection (and the immediate-reveal result, if on).
+  const scheduleAutoAdvance = () => {
+    if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current);
+    advanceTimeoutRef.current = setTimeout(() => {
+      advanceTimeoutRef.current = null;
+      goToNext();
+    }, 600);
   };
 
   if (loadingMeta) return <Spin size="large" style={{ display: 'block', margin: '80px auto' }} />;
@@ -197,7 +227,7 @@ export default function PortalTestTakePage() {
     );
   }
 
-  const renderQuestionBody = (q) => {
+  const renderQuestionBody = (q, { autoAdvance = false } = {}) => {
     const result = checkResults[q._id];
     const disabled = revealMode === 'immediate' && checking[q._id];
 
@@ -246,6 +276,7 @@ export default function PortalTestTakePage() {
             onChange={(e) => {
               setAnswer(q._id, { selectedOptionIds: [e.target.value] });
               checkOne(q, [e.target.value]);
+              if (autoAdvance) scheduleAutoAdvance();
             }}
           >
             {q.options.map((opt) => (
@@ -286,7 +317,9 @@ export default function PortalTestTakePage() {
             status={timeLeft <= 5 ? 'exception' : 'active'}
           />
         </Space>
-        <Card title={`${currentIndex + 1}. ${q.prompt}`}>{renderQuestionBody(q)}</Card>
+        <Card title={`${currentIndex + 1}. ${q.prompt}`}>
+          {renderQuestionBody(q, { autoAdvance: true })}
+        </Card>
         <Button
           type="primary"
           size="large"

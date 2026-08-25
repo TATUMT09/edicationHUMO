@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, List, Spin, Empty, Tag, Segmented } from 'antd';
-import { PlayCircleOutlined, FileTextOutlined, ReadOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, FileTextOutlined, ReadOutlined, CheckCircleFilled } from '@ant-design/icons';
 
 import portalRequest from '@/request/portalRequest';
 
@@ -35,6 +35,8 @@ export default function PortalContentListPage() {
   const pathFor = (item) => {
     if (item.kind === 'video') return `/portal/video/${item._id}`;
     if (item.kind === 'book') return `/portal/books/${item._id}`;
+    // Tests are single-attempt — once done, go straight to the result.
+    if (item.completedAttempt) return `/portal/attempts/${item.completedAttempt._id}`;
     return `/portal/tests/${item._id}`;
   };
 
@@ -85,7 +87,13 @@ export default function PortalContentListPage() {
                     ) : (
                       <>
                         <Tag>{TEST_TYPE_LABELS[item.testType]}</Tag>
-                        <span>{item.questionCount} ta savol</span>
+                        {item.completedAttempt ? (
+                          <Tag color="success" icon={<CheckCircleFilled />}>
+                            Bajarildi — {item.completedAttempt.scorePercent}%
+                          </Tag>
+                        ) : (
+                          <span>{item.questionCount} ta savol</span>
+                        )}
                       </>
                     )
                   }

@@ -8,6 +8,7 @@ const QUESTION_COUNT_TIERS = require('@/utils/questionCountTiers');
 const getTestMeta = async (req, res) => {
   const Test = mongoose.model('Test');
   const Question = mongoose.model('Question');
+  const Attempt = mongoose.model('Attempt');
 
   const { testId } = req.params;
 
@@ -15,6 +16,18 @@ const getTestMeta = async (req, res) => {
   if (!test) {
     return res.status(404).json({ success: false, result: null, message: 'Test topilmadi.' });
   }
+
+  // Tests are single-attempt — if the student already has one (graded or
+  // still awaiting teacher review), send the id straight back so the
+  // frontend can skip the chooser and go to the result instead of letting
+  // them start again.
+  const existingAttempt = await Attempt.findOne({
+    student: req.student._id,
+    test: testId,
+    removed: false,
+  })
+    .select('_id scorePercent status')
+    .exec();
 
   const availableCount = await Question.countDocuments({ test: testId, removed: false });
   const allowedTiers =
@@ -27,7 +40,7 @@ const getTestMeta = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    result: { test, availableCount, allowedTiers },
+    result: { test, availableCount, allowedTiers, existingAttempt: existingAttempt || null },
     message: 'Test tayyor.',
   });
 };
