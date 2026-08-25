@@ -43,19 +43,20 @@ export default function PortalContentListPage() {
       <h2>
         {data.subject?.name} — {LEVEL_LABELS[level] || level}
       </h2>
-      <Segmented
-        style={{ marginBottom: 16 }}
-        value={filter}
-        onChange={setFilter}
-        options={[
-          { label: 'Hammasi', value: 'all' },
-          { label: 'Video darslar', value: 'video' },
-          { label: 'Kitoblar', value: 'book' },
-          { label: 'Yopiq test', value: 'closed' },
-          { label: 'Ochiq test', value: 'open' },
-          { label: 'Kviz', value: 'quiz' },
-        ]}
-      />
+      <div style={{ overflowX: 'auto', marginBottom: 16 }}>
+        <Segmented
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { label: 'Hammasi', value: 'all' },
+            { label: 'Video darslar', value: 'video' },
+            { label: 'Kitoblar', value: 'book' },
+            { label: 'Yopiq test', value: 'closed' },
+            { label: 'Ochiq test', value: 'open' },
+            { label: 'Kviz', value: 'quiz' },
+          ]}
+        />
+      </div>
       {items.length === 0 ? (
         <Empty description="Bu bo'limda hali kontent yo'q" />
       ) : (

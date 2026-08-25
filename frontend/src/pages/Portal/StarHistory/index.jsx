@@ -33,6 +33,7 @@ export default function PortalStarHistoryPage() {
           rowKey="_id"
           dataSource={transactions}
           pagination={{ pageSize: 20 }}
+          scroll={{ x: 'max-content' }}
           columns={[
             {
               title: 'Sana',

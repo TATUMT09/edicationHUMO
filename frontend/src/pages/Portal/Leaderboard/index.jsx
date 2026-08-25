@@ -63,6 +63,7 @@ export default function PortalLeaderboardPage() {
           rowKey={(r) => r.student._id}
           dataSource={data?.entries || []}
           pagination={false}
+          scroll={{ x: 'max-content' }}
           rowClassName={(r) => (r.student._id === student?._id ? 'portal-leaderboard-me' : '')}
           onRow={(r) => ({
             style: RANK_ROW_BG[r.rank] ? { background: RANK_ROW_BG[r.rank] } : undefined,

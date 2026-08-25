@@ -1,0 +1,51 @@
+/* Students shouldn't be able to select/copy test questions, book text, etc.
+   out of the portal — but inputs/textareas (their own typed answers) stay
+   selectable, otherwise they couldn't edit what they wrote. */
+.portal-no-copy {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.portal-no-copy input,
+.portal-no-copy textarea,
+.portal-no-copy .ant-input,
+.portal-no-copy .ant-input-affix-wrapper {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Mobile layout for the portal header — desktop keeps the brand text,
+   full name and roomy spacing; small screens shed anything that isn't
+   essential so the logo/menu/stars/avatar/logout row doesn't overflow. */
+.portal-header {
+  padding-inline: 20px;
+  gap: 16px;
+}
+.portal-header-menu {
+  margin-left: 24px;
+}
+.portal-content {
+  padding: 24px;
+}
+
+@media (max-width: 576px) {
+  .portal-header {
+    padding-inline: 10px;
+    gap: 8px;
+  }
+  .portal-header-menu {
+    margin-left: 8px;
+  }
+  .portal-hide-mobile,
+  .portal-user-name {
+    display: none;
+  }
+  .portal-content {
+    padding: 12px;
+  }
+}
+
+.portal-table-scroll {
+  overflow-x: auto;
+}
+

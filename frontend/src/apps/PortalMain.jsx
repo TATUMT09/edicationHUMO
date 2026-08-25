@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react';
-import { Layout, Menu, Button, Avatar } from 'antd';
+import { Layout, Menu, Button, Avatar, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -42,6 +42,11 @@ export default function PortalMain() {
   const onLogout = () => {
     dispatch(portalLogout());
     navigate('/portal/login');
+  };
+
+  const blockCopy = (e) => {
+    e.preventDefault();
+    message.warning("Nusxa olish taqiqlangan");
   };
 
   const menuItems = [
@@ -90,37 +95,47 @@ export default function PortalMain() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Header
+        className="portal-header"
         style={{
           display: 'flex',
           alignItems: 'center',
           background: '#fff',
           boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          paddingInline: 20,
         }}
       >
-        <Link to="/portal" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Link to="/portal" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <img src={logo} alt="HUMO Education" style={{ height: 36, borderRadius: '50%' }} />
-          <span style={{ fontSize: 18, fontWeight: 'bold', color: '#1640D6' }}>HUMO Education</span>
+          <span className="portal-hide-mobile" style={{ fontSize: 18, fontWeight: 'bold', color: '#1640D6' }}>
+            HUMO Education
+          </span>
         </Link>
         <Menu
+          className="portal-header-menu"
           mode="horizontal"
           selectable={false}
           items={menuItems}
-          style={{ flex: 1, marginLeft: 40, borderBottom: 'none', minWidth: 0 }}
+          style={{ flex: 1, borderBottom: 'none', minWidth: 0 }}
         />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
           {totalStars != null && (
-            <span style={{ fontWeight: 'bold', color: '#d48806' }}>⭐ {totalStars}</span>
+            <span style={{ fontWeight: 'bold', color: '#d48806', whiteSpace: 'nowrap' }}>
+              ⭐ {totalStars}
+            </span>
           )}
           <Avatar icon={<UserOutlined />} src={student?.photo} />
-          <span>{student?.name}</span>
+          <span className="portal-user-name">{student?.name}</span>
           <Button icon={<LogoutOutlined />} onClick={onLogout}>
-            {translate('Logout')}
+            <span className="portal-hide-mobile">{translate('Logout')}</span>
           </Button>
         </div>
       </Header>
-      <Content style={{ padding: 24 }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <Content className="portal-content">
+        <div
+          className="portal-no-copy"
+          style={{ maxWidth: 1100, margin: '0 auto' }}
+          onCopy={blockCopy}
+          onCut={blockCopy}
+        >
           <Suspense fallback={<PageLoader />}>
             <PortalRouter />
           </Suspense>

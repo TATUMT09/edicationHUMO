@@ -81,18 +81,19 @@ export default function PortalLibraryPage() {
     <div>
       <h2>📚 Kutubxona</h2>
 
-      <Segmented
-        style={{ marginBottom: 16 }}
-        options={CATEGORY_OPTIONS}
-        value={category}
-        onChange={(value) => {
-          setCategory(value);
-          if (value === 'fiction') {
-            setSubjectId(undefined);
-            setLevel(undefined);
-          }
-        }}
-      />
+      <div style={{ overflowX: 'auto', marginBottom: 16 }}>
+        <Segmented
+          options={CATEGORY_OPTIONS}
+          value={category}
+          onChange={(value) => {
+            setCategory(value);
+            if (value === 'fiction') {
+              setSubjectId(undefined);
+              setLevel(undefined);
+            }
+          }}
+        />
+      </div>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
         <Input.Search

@@ -77,6 +77,7 @@ export default function PortalStatsPage() {
           rowKey="subjectId"
           dataSource={stats.bySubject}
           pagination={false}
+          scroll={{ x: 'max-content' }}
           columns={[
             { title: 'Fan', dataIndex: 'subjectName', render: (v) => v || 'Nomsiz' },
             { title: "To'g'ri", dataIndex: 'correct' },

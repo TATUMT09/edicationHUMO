@@ -31,7 +31,10 @@ export default function PortalHistoryPage() {
           dataSource={attempts}
           renderItem={(attempt) => (
             <List.Item>
-              <Link to={`/portal/attempts/${attempt._id}`} style={{ width: '100%', display: 'flex', gap: 16, alignItems: 'center' }}>
+              <Link
+                to={`/portal/attempts/${attempt._id}`}
+                style={{ width: '100%', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}
+              >
                 <List.Item.Meta
                   title={attempt.testTitle}
                   description={

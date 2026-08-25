@@ -35,6 +35,7 @@ export default function PortalMyRewardOrdersPage() {
           rowKey="_id"
           dataSource={orders}
           pagination={{ pageSize: 20 }}
+          scroll={{ x: 'max-content' }}
           columns={[
             { title: "Sovg'a", dataIndex: 'rewardTitle' },
             { title: 'Narxi', dataIndex: 'starCost', render: (v) => `⭐ ${v}` },
