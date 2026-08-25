@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const VALID_LEVELS = ['beginner', 'intermediate', 'advanced'];
+const VALID_CATEGORIES = ['study', 'fiction'];
 
 // Standalone library: every book across all subjects/levels, searchable and
 // filterable, plus a short "recommended for you" list derived from the
@@ -10,10 +11,13 @@ const getLibrary = async (req, res) => {
   const Book = mongoose.model('Book');
   const Attempt = mongoose.model('Attempt');
 
-  const { subjectId, level, q } = req.query;
+  const { subjectId, level, q, category } = req.query;
 
   if (level && !VALID_LEVELS.includes(level)) {
     return res.status(400).json({ success: false, result: null, message: "Noto'g'ri daraja." });
+  }
+  if (category && !VALID_CATEGORIES.includes(category)) {
+    return res.status(400).json({ success: false, result: null, message: "Noto'g'ri turkum." });
   }
   // subjectId/q come straight from the query string — Express parses
   // bracket notation (e.g. ?subjectId[$ne]=null) into a nested object, so
@@ -29,6 +33,7 @@ const getLibrary = async (req, res) => {
   const query = { removed: false, enabled: true };
   if (subjectId) query.subject = subjectId;
   if (level) query.level = level;
+  if (category) query.category = category;
   if (q) {
     const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     query.$or = [{ title: rx }, { author: rx }];

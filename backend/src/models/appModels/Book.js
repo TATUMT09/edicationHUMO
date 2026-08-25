@@ -9,11 +9,34 @@ const schema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  subject: { type: mongoose.Schema.ObjectId, ref: 'Subject', required: true, autopopulate: true },
+  // Study books stay tied to a subject+level like tests/videos. Fiction
+  // ("badiiy adabiyot") is general reading material — a novel isn't "10th
+  // grade Physics" — so neither is required once category is 'fiction'.
+  category: {
+    type: String,
+    enum: ['study', 'fiction'],
+    default: 'study',
+  },
+  subject: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Subject',
+    autopopulate: true,
+    validate: {
+      validator: function (v) {
+        return this.category !== 'study' || !!v;
+      },
+      message: "O'quv adabiyoti uchun fan tanlanishi shart.",
+    },
+  },
   level: {
     type: String,
     enum: ['beginner', 'intermediate', 'advanced'],
-    required: true,
+    validate: {
+      validator: function (v) {
+        return this.category !== 'study' || !!v;
+      },
+      message: "O'quv adabiyoti uchun daraja tanlanishi shart.",
+    },
   },
   title: {
     type: String,

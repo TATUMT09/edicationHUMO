@@ -276,6 +276,7 @@ const lang = {
   book_list: "Kitoblar ro'yxati",
   add_new_book: "Yangi kitob qo'shish",
   author: 'Muallif',
+  category: 'Turkumi',
   file_url: 'Fayl havolasi',
   reward: "Sovg'a",
   rewards: "Sovg'alar",

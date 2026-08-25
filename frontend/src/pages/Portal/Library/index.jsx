@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, List, Spin, Empty, Input, Select, Tag } from 'antd';
+import { Card, List, Spin, Empty, Input, Select, Tag, Segmented } from 'antd';
 import { ReadOutlined, StarFilled } from '@ant-design/icons';
 
 import portalRequest from '@/request/portalRequest';
@@ -11,6 +11,12 @@ const LEVEL_OPTIONS = [
   { value: 'advanced', label: 'Yuqori' },
 ];
 const LEVEL_LABELS = { beginner: "Boshlang'ich", intermediate: "O'rta", advanced: 'Yuqori' };
+
+const CATEGORY_OPTIONS = [
+  { value: 'all', label: 'Hammasi' },
+  { value: 'study', label: "O'quv adabiyoti" },
+  { value: 'fiction', label: 'Badiiy adabiyot' },
+];
 
 function BookCard({ book, navigate, highlighted }) {
   return (
@@ -40,6 +46,7 @@ function BookCard({ book, navigate, highlighted }) {
 export default function PortalLibraryPage() {
   const navigate = useNavigate();
   const [subjects, setSubjects] = useState([]);
+  const [category, setCategory] = useState('all');
   const [subjectId, setSubjectId] = useState(undefined);
   const [level, setLevel] = useState(undefined);
   const [q, setQ] = useState('');
@@ -56,16 +63,36 @@ export default function PortalLibraryPage() {
   useEffect(() => {
     setLoading(true);
     const timeout = setTimeout(async () => {
-      const res = await portalRequest.getLibrary({ subjectId, level, q });
+      const res = await portalRequest.getLibrary({
+        subjectId,
+        level,
+        q,
+        category: category === 'all' ? undefined : category,
+      });
       if (res.success) setData(res.result);
       setLoading(false);
     }, 300);
     return () => clearTimeout(timeout);
-  }, [subjectId, level, q]);
+  }, [subjectId, level, q, category]);
+
+  const showStudyFilters = category !== 'fiction';
 
   return (
     <div>
       <h2>📚 Kutubxona</h2>
+
+      <Segmented
+        style={{ marginBottom: 16 }}
+        options={CATEGORY_OPTIONS}
+        value={category}
+        onChange={(value) => {
+          setCategory(value);
+          if (value === 'fiction') {
+            setSubjectId(undefined);
+            setLevel(undefined);
+          }
+        }}
+      />
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
         <Input.Search
@@ -74,22 +101,26 @@ export default function PortalLibraryPage() {
           style={{ maxWidth: 280 }}
           onChange={(e) => setQ(e.target.value)}
         />
-        <Select
-          allowClear
-          placeholder="Fan"
-          style={{ minWidth: 160 }}
-          options={subjects.map((s) => ({ value: s._id, label: s.name }))}
-          value={subjectId}
-          onChange={setSubjectId}
-        />
-        <Select
-          allowClear
-          placeholder="Daraja"
-          style={{ minWidth: 160 }}
-          options={LEVEL_OPTIONS}
-          value={level}
-          onChange={setLevel}
-        />
+        {showStudyFilters && (
+          <>
+            <Select
+              allowClear
+              placeholder="Fan"
+              style={{ minWidth: 160 }}
+              options={subjects.map((s) => ({ value: s._id, label: s.name }))}
+              value={subjectId}
+              onChange={setSubjectId}
+            />
+            <Select
+              allowClear
+              placeholder="Daraja"
+              style={{ minWidth: 160 }}
+              options={LEVEL_OPTIONS}
+              value={level}
+              onChange={setLevel}
+            />
+          </>
+        )}
       </div>
 
       {loading ? (

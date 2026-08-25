@@ -238,12 +238,13 @@ const portalRequest = {
       return portalErrorHandler(error);
     }
   },
-  getLibrary: async ({ subjectId, level, q } = {}) => {
+  getLibrary: async ({ subjectId, level, q, category } = {}) => {
     try {
       const params = {};
       if (subjectId) params.subjectId = subjectId;
       if (level) params.level = level;
       if (q) params.q = q;
+      if (category) params.category = category;
       const response = await portalAxios.get('library', { params });
       return response.data;
     } catch (error) {

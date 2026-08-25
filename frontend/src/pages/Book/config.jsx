@@ -4,6 +4,11 @@ const LEVEL_OPTIONS = [
   { value: 'advanced', label: 'Yuqori' },
 ];
 
+const CATEGORY_OPTIONS = [
+  { value: 'study', label: "O'quv adabiyoti" },
+  { value: 'fiction', label: 'Badiiy adabiyot' },
+];
+
 export const fields = {
   title: {
     type: 'string',
@@ -13,6 +18,11 @@ export const fields = {
     type: 'string',
     label: 'author',
   },
+  category: {
+    type: 'select',
+    label: 'category',
+    options: CATEGORY_OPTIONS,
+  },
   subject: {
     type: 'async',
     entity: 'subject',
@@ -20,12 +30,10 @@ export const fields = {
     displayLabels: ['name'],
     outputValue: '_id',
     label: 'subject',
-    required: true,
   },
   level: {
     type: 'select',
     label: 'level',
-    required: true,
     options: LEVEL_OPTIONS,
   },
   fileUrl: {

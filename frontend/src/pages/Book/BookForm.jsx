@@ -13,9 +13,15 @@ const LEVEL_OPTIONS = [
   { value: 'advanced', label: 'Yuqori' },
 ];
 
+const CATEGORY_OPTIONS = [
+  { value: 'study', label: "O'quv adabiyoti (fan/darajaga bog'liq)" },
+  { value: 'fiction', label: "Badiiy adabiyot (fan/darajasiz)" },
+];
+
 export default function BookForm() {
   const form = Form.useFormInstance();
   const [uploading, setUploading] = useState(false);
+  const category = Form.useWatch('category', form) || 'study';
 
   const uploadBook = async (file) => {
     setUploading(true);
@@ -36,16 +42,32 @@ export default function BookForm() {
       <Form.Item label="Muallif" name="author">
         <Input />
       </Form.Item>
-      <Form.Item label="Fan" name="subject" rules={[{ required: true, message: 'Fanni tanlang' }]}>
-        <SelectAsync entity="subject" displayLabels={['name']} outputValue="_id" />
+      <Form.Item label="Turkumi" name="category" initialValue="study">
+        <Select
+          options={CATEGORY_OPTIONS}
+          onChange={(value) => {
+            if (value === 'fiction') form.setFieldsValue({ subject: undefined, level: undefined });
+          }}
+        />
       </Form.Item>
-      <Form.Item
-        label="Daraja"
-        name="level"
-        rules={[{ required: true, message: 'Darajani tanlang' }]}
-      >
-        <Select options={LEVEL_OPTIONS} placeholder="Tanlang" />
-      </Form.Item>
+      {category === 'study' && (
+        <>
+          <Form.Item
+            label="Fan"
+            name="subject"
+            rules={[{ required: true, message: 'Fanni tanlang' }]}
+          >
+            <SelectAsync entity="subject" displayLabels={['name']} outputValue="_id" />
+          </Form.Item>
+          <Form.Item
+            label="Daraja"
+            name="level"
+            rules={[{ required: true, message: 'Darajani tanlang' }]}
+          >
+            <Select options={LEVEL_OPTIONS} placeholder="Tanlang" />
+          </Form.Item>
+        </>
+      )}
 
       <Form.Item
         label="Fayl havolasi yoki yuklangan fayl"
