@@ -7,9 +7,24 @@
     <link rel="icon" type="image/jpeg" href="./src/style/images/humo-logo.jpg" />
     <title>HUMO Education</title>
     <meta name="description" content="HUMO Education - to'lovlarni va o'quvchilarni boshqarish tizimi" />
+
+    <!-- Installable app (Android/Chrome + iOS/Safari "Add to Home Screen") -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#1640D6" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="HUMO" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>
