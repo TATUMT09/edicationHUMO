@@ -13,7 +13,6 @@ const LEVEL_OPTIONS = [
 const LEVEL_LABELS = { beginner: "Boshlang'ich", intermediate: "O'rta", advanced: 'Yuqori' };
 
 const CATEGORY_OPTIONS = [
-  { value: 'all', label: 'Hammasi' },
   { value: 'study', label: "O'quv adabiyoti" },
   { value: 'fiction', label: 'Badiiy adabiyot' },
 ];
@@ -46,7 +45,7 @@ function BookCard({ book, navigate, highlighted }) {
 export default function PortalLibraryPage() {
   const navigate = useNavigate();
   const [subjects, setSubjects] = useState([]);
-  const [category, setCategory] = useState('all');
+  const [category, setCategory] = useState('study');
   const [subjectId, setSubjectId] = useState(undefined);
   const [level, setLevel] = useState(undefined);
   const [q, setQ] = useState('');
@@ -63,12 +62,7 @@ export default function PortalLibraryPage() {
   useEffect(() => {
     setLoading(true);
     const timeout = setTimeout(async () => {
-      const res = await portalRequest.getLibrary({
-        subjectId,
-        level,
-        q,
-        category: category === 'all' ? undefined : category,
-      });
+      const res = await portalRequest.getLibrary({ subjectId, level, q, category });
       if (res.success) setData(res.result);
       setLoading(false);
     }, 300);
