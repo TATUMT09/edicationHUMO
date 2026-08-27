@@ -13,7 +13,7 @@ export default function PortalContentListPage() {
   const navigate = useNavigate();
   const [data, setData] = useState({ subject: null, videos: [], books: [], tests: [] });
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('video');
 
   useEffect(() => {
     (async () => {
@@ -30,7 +30,7 @@ export default function PortalContentListPage() {
     ...data.videos.map((v) => ({ ...v, kind: 'video' })),
     ...(data.books || []).map((b) => ({ ...b, kind: 'book' })),
     ...data.tests.map((t) => ({ ...t, kind: t.testType })),
-  ].filter((item) => filter === 'all' || item.kind === filter);
+  ].filter((item) => item.kind === filter);
 
   const pathFor = (item) => {
     if (item.kind === 'video') return `/portal/video/${item._id}`;
@@ -50,7 +50,6 @@ export default function PortalContentListPage() {
           value={filter}
           onChange={setFilter}
           options={[
-            { label: 'Hammasi', value: 'all' },
             { label: 'Video darslar', value: 'video' },
             { label: 'Kitoblar', value: 'book' },
             { label: 'Yopiq test', value: 'closed' },
