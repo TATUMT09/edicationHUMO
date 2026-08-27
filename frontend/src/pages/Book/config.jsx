@@ -45,10 +45,6 @@ export const fields = {
     type: 'textarea',
     label: 'description',
   },
-  order: {
-    type: 'number',
-    label: 'order',
-  },
   enabled: {
     type: 'boolean',
     label: 'enabled',

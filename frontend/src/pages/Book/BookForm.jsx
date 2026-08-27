@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Form, Input, InputNumber, Switch, Select, Upload, Button, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Form, Input, Switch, Select, Upload, Button, message } from 'antd';
+import { UploadOutlined, FileDoneOutlined } from '@ant-design/icons';
 
 import SelectAsync from '@/components/SelectAsync';
 import { request } from '@/request';
@@ -22,6 +22,7 @@ export default function BookForm() {
   const form = Form.useFormInstance();
   const [uploading, setUploading] = useState(false);
   const category = Form.useWatch('category', form) || 'study';
+  const fileUrl = Form.useWatch('fileUrl', form);
 
   const uploadBook = async (file) => {
     setUploading(true);
@@ -69,26 +70,28 @@ export default function BookForm() {
         </>
       )}
 
-      <Form.Item
-        label="Fayl havolasi yoki yuklangan fayl"
-        name="fileUrl"
-        rules={[{ required: true, message: "Fayl havolasini kiriting yoki PDF yuklang" }]}
-      >
-        <Input placeholder="https://... yoki PDF faylni pastdan yuklang" />
-      </Form.Item>
-      <Form.Item label="Yoki PDF faylni yuklang">
+      <Form.Item label="Kitob fayli (PDF)" required>
         <Upload beforeUpload={uploadBook} maxCount={1} showUploadList={false} accept=".pdf">
           <Button icon={<UploadOutlined />} loading={uploading}>
-            {uploading ? 'Yuklanmoqda...' : 'PDF fayl tanlash'}
+            {uploading ? 'Yuklanmoqda...' : fileUrl ? 'Boshqa fayl tanlash' : 'PDF fayl tanlash'}
           </Button>
         </Upload>
+        {fileUrl && (
+          <div style={{ marginTop: 8, color: '#52c41a' }}>
+            <FileDoneOutlined /> Fayl yuklandi
+          </div>
+        )}
+        <Form.Item
+          name="fileUrl"
+          rules={[{ required: true, message: 'PDF fayl yuklang' }]}
+          style={{ marginBottom: 0 }}
+        >
+          <Input type="hidden" />
+        </Form.Item>
       </Form.Item>
 
       <Form.Item label="Tavsif" name="description">
         <TextArea rows={3} />
-      </Form.Item>
-      <Form.Item label="Tartib raqami" name="order">
-        <InputNumber min={0} style={{ width: '100%' }} />
       </Form.Item>
       <Form.Item label="Yoqilgan" name="enabled" valuePropName="checked" initialValue={true}>
         <Switch />
