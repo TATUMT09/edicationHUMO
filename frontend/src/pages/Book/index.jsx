@@ -1,5 +1,6 @@
 import CrudModule from '@/modules/CrudModule/CrudModule';
 import BookForm from './BookForm';
+import BookCoverBackfill from './BookCoverBackfill';
 import { fields } from './config';
 
 import useLanguage from '@/locale/useLanguage';
@@ -29,5 +30,10 @@ export default function Book() {
     searchConfig,
     deleteModalLabels,
   };
-  return <CrudModule createForm={<BookForm />} updateForm={<BookForm />} config={config} />;
+  return (
+    <>
+      <BookCoverBackfill />
+      <CrudModule createForm={<BookForm />} updateForm={<BookForm />} config={config} />
+    </>
+  );
 }
