@@ -27,6 +27,12 @@ export default function PortalBookViewerPage() {
   if (!book) return <Empty description="Kitob topilmadi" />;
 
   const fileHref = isUploadedFile(book.fileUrl) ? BASE_URL + book.fileUrl : book.fileUrl;
+  // Chrome/Edge's built-in PDF viewer honors these open-parameters — hides
+  // its own toolbar and the thumbnail/outline side panel so only the page
+  // content shows, instead of a second toolbar+sidebar UI stacked inside
+  // ours. (Not part of any spec, so a browser that ignores them just shows
+  // its normal viewer — never a broken result.)
+  const embedHref = `${fileHref}#toolbar=0&navpanes=0`;
 
   return (
     <div>
@@ -39,7 +45,7 @@ export default function PortalBookViewerPage() {
       {/* Rendered by the browser's own PDF viewer, right here on the page —
           no new tab. */}
       <iframe
-        src={fileHref}
+        src={embedHref}
         title={book.title}
         style={{ width: '100%', height: '80vh', border: '1px solid #f0f0f0', borderRadius: 8 }}
       />

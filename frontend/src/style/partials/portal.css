@@ -49,3 +49,11 @@
   overflow-x: auto;
 }
 
+/* Full-bleed sections (e.g. the library grid) use 100vw + negative margins
+   to break out of the portal's centered max-width column, which can hang
+   a few px past the true viewport edge when a scrollbar is present —
+   this keeps that from ever showing as page-level horizontal scroll. */
+body {
+  overflow-x: hidden;
+}
+

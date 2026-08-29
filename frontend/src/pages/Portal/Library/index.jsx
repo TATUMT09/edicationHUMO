@@ -29,19 +29,19 @@ function BookCard({ book, navigate }) {
             <img
               src={BASE_URL + book.coverImage}
               alt={book.title}
-              style={{ height: 340, objectFit: 'cover', borderBottom: '1px solid #f0f0f0' }}
+              style={{ height: 440, objectFit: 'cover', borderBottom: '1px solid #f0f0f0' }}
             />
           ) : (
             <div
               style={{
-                height: 340,
+                height: 440,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: '#fafafa',
+                background: '#1640D6',
               }}
             >
-              <ReadOutlined style={{ fontSize: 64, color: '#d9d9d9' }} />
+              <ReadOutlined style={{ fontSize: 72, color: '#fff' }} />
             </div>
           )
         }
@@ -141,11 +141,25 @@ export default function PortalLibraryPage() {
       ) : data.books.length === 0 ? (
         <Empty description="Kitob topilmadi" />
       ) : (
-        <List
-          grid={{ gutter: 16, xs: 1, sm: 2, md: 4 }}
-          dataSource={data.books}
-          renderItem={(book) => <BookCard book={book} navigate={navigate} />}
-        />
+        // Breaks out of the portal's centered max-width column so the grid
+        // uses the full viewport width instead of leaving empty margins.
+        <div
+          style={{
+            width: '100vw',
+            position: 'relative',
+            left: '50%',
+            right: '50%',
+            marginLeft: '-50vw',
+            marginRight: '-50vw',
+            paddingInline: 16,
+          }}
+        >
+          <List
+            grid={{ gutter: 12, xs: 1, sm: 2, md: 4 }}
+            dataSource={data.books}
+            renderItem={(book) => <BookCard book={book} navigate={navigate} />}
+          />
+        </div>
       )}
     </div>
   );
