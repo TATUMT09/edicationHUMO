@@ -1,6 +1,11 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+// Served as .js (not the package's native .mjs) because nginx on this host
+// has no MIME mapping for .mjs and serves it as application/octet-stream —
+// browsers refuse to execute a worker with a non-JS Content-Type. The file
+// content is still a valid ES module; pdf.js requests it as type:"module"
+// internally regardless of the URL's extension.
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 const COVER_WIDTH = 400;
 
