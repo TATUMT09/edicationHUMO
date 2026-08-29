@@ -90,8 +90,20 @@ export default function PortalLibraryPage() {
   const showStudyFilters = category !== 'fiction';
 
   return (
-    <div>
-      <h2>📚 Kutubxona</h2>
+    // Full-bleed, colored with the HUMO Education emblem's own blues
+    // (deep indigo -> sky blue) instead of leaving the portal's default
+    // white/centered-column look.
+    <div
+      style={{
+        width: '100vw',
+        position: 'relative',
+        left: '50%',
+        marginLeft: '-50vw',
+        background: 'linear-gradient(135deg, #1640D6 0%, #3fa9dc 100%)',
+        padding: '24px 16px 40px',
+      }}
+    >
+      <h2 style={{ color: '#fff' }}>📚 Kutubxona</h2>
 
       <div style={{ overflowX: 'auto', marginBottom: 16 }}>
         <Segmented
@@ -139,27 +151,13 @@ export default function PortalLibraryPage() {
       {loading ? (
         <Spin size="large" style={{ display: 'block', margin: '80px auto' }} />
       ) : data.books.length === 0 ? (
-        <Empty description="Kitob topilmadi" />
+        <Empty description="Kitob topilmadi" style={{ background: '#fff', padding: 24, borderRadius: 8 }} />
       ) : (
-        // Breaks out of the portal's centered max-width column so the grid
-        // uses the full viewport width instead of leaving empty margins.
-        <div
-          style={{
-            width: '100vw',
-            position: 'relative',
-            left: '50%',
-            right: '50%',
-            marginLeft: '-50vw',
-            marginRight: '-50vw',
-            paddingInline: 16,
-          }}
-        >
-          <List
-            grid={{ gutter: 12, xs: 1, sm: 2, md: 4 }}
-            dataSource={data.books}
-            renderItem={(book) => <BookCard book={book} navigate={navigate} />}
-          />
-        </div>
+        <List
+          grid={{ gutter: 12, xs: 1, sm: 2, md: 4 }}
+          dataSource={data.books}
+          renderItem={(book) => <BookCard book={book} navigate={navigate} />}
+        />
       )}
     </div>
   );
