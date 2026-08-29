@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, List, Spin, Empty, Input, Select, Tag, Segmented } from 'antd';
-import { ReadOutlined, StarFilled } from '@ant-design/icons';
+import { ReadOutlined } from '@ant-design/icons';
 
 import portalRequest from '@/request/portalRequest';
 import { BASE_URL } from '@/config/serverApiConfig';
@@ -18,7 +18,7 @@ const CATEGORY_OPTIONS = [
   { value: 'study', label: "O'quv adabiyoti" },
 ];
 
-function BookCard({ book, navigate, highlighted }) {
+function BookCard({ book, navigate }) {
   return (
     <List.Item>
       <Card
@@ -29,19 +29,24 @@ function BookCard({ book, navigate, highlighted }) {
             <img
               src={BASE_URL + book.coverImage}
               alt={book.title}
-              style={{ height: 180, objectFit: 'cover', borderBottom: '1px solid #f0f0f0' }}
+              style={{ height: 340, objectFit: 'cover', borderBottom: '1px solid #f0f0f0' }}
             />
-          ) : undefined
+          ) : (
+            <div
+              style={{
+                height: 340,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#fafafa',
+              }}
+            >
+              <ReadOutlined style={{ fontSize: 64, color: '#d9d9d9' }} />
+            </div>
+          )
         }
       >
         <Card.Meta
-          avatar={
-            book.coverImage ? undefined : highlighted ? (
-              <StarFilled style={{ fontSize: 24, color: '#faad14' }} />
-            ) : (
-              <ReadOutlined style={{ fontSize: 24, color: '#1640D6' }} />
-            )
-          }
           title={book.title}
           description={
             <>
@@ -63,7 +68,7 @@ export default function PortalLibraryPage() {
   const [level, setLevel] = useState(undefined);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState({ books: [], recommended: [] });
+  const [data, setData] = useState({ books: [] });
 
   useEffect(() => {
     (async () => {
@@ -133,33 +138,14 @@ export default function PortalLibraryPage() {
 
       {loading ? (
         <Spin size="large" style={{ display: 'block', margin: '80px auto' }} />
+      ) : data.books.length === 0 ? (
+        <Empty description="Kitob topilmadi" />
       ) : (
-        <>
-          {data.recommended?.length > 0 && (
-            <>
-              <h3>⭐ Sizga tavsiya</h3>
-              <List
-                grid={{ gutter: 16, xs: 1, sm: 2, md: 3 }}
-                dataSource={data.recommended}
-                renderItem={(book) => (
-                  <BookCard book={book} navigate={navigate} highlighted />
-                )}
-                style={{ marginBottom: 24 }}
-              />
-            </>
-          )}
-
-          <h3>Barcha kitoblar</h3>
-          {data.books.length === 0 ? (
-            <Empty description="Kitob topilmadi" />
-          ) : (
-            <List
-              grid={{ gutter: 16, xs: 1, sm: 2, md: 3 }}
-              dataSource={data.books}
-              renderItem={(book) => <BookCard book={book} navigate={navigate} />}
-            />
-          )}
-        </>
+        <List
+          grid={{ gutter: 16, xs: 1, sm: 2, md: 4 }}
+          dataSource={data.books}
+          renderItem={(book) => <BookCard book={book} navigate={navigate} />}
+        />
       )}
     </div>
   );
