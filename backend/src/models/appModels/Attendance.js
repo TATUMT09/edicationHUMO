@@ -34,6 +34,15 @@ const schema = new mongoose.Schema({
     type: String,
     enum: ['present', 'absent'],
   },
+  checkInAt: Date,
+  checkOutAt: Date,
+  // 'manual' (default) covers every existing/teacher-marked record;
+  // 'face' is set only by the face-recognition kiosk.
+  source: {
+    type: String,
+    enum: ['manual', 'face'],
+    default: 'manual',
+  },
   createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
   created: {
     type: Date,

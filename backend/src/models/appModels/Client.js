@@ -14,6 +14,10 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  photo: String,
+  // 128-length face descriptor computed client-side (face-api.js) from
+  // `photo` — never computed or re-derived on the server, just stored.
+  faceDescriptor: [Number],
   phone: String,
   country: String,
   address: String,

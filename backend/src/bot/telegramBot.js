@@ -237,6 +237,12 @@ async function notifyAttendance(student, group, dateStr, status) {
   return notifyParentsOfStudent(student._id, text);
 }
 
+async function notifyDeparture(student, group, dateStr, timeStr) {
+  if (!bot || !student?._id) return 0;
+  const text = `Assalomu alaykum! ${student.name} bugun (${dateStr}) "${group?.name || ''}" guruhidagi darsdan soat ${timeStr}da chiqib ketdi.`;
+  return notifyParentsOfStudent(student._id, text);
+}
+
 async function notifyUnpaidReminder(debtors) {
   if (!bot) return { sent: 0 };
   let sent = 0;
@@ -258,4 +264,4 @@ async function notifyBirthday(student) {
   );
 }
 
-module.exports = { startBot, notifyAttendance, notifyUnpaidReminder, notifyBirthday };
+module.exports = { startBot, notifyAttendance, notifyDeparture, notifyUnpaidReminder, notifyBirthday };
