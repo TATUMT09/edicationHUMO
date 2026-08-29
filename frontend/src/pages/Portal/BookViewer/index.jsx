@@ -129,26 +129,19 @@ export default function PortalBookViewerPage() {
         </div>
 
         {/* Rendered by the browser's own PDF viewer, right here on the
-            page — no new tab. Narrower + centered (not the full 1000px
-            container) because most scanned book pages are portrait —
-            stretching the frame wide just leaves the browser's own PDF
-            viewer to fill the leftover width with its own dark backdrop,
-            which is the black bars on the sides; a page-shaped frame
-            leaves much less of that space to show at all. */}
-        <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <iframe
-            src={embedHref}
-            title={book.title}
-            style={{
-              width: '100%',
-              height: '78vh',
-              border: `1px solid ${theme.frameBorder}`,
-              borderRadius: 10,
-              background: theme.frame,
-              boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-            }}
-          />
-        </div>
+            page — no new tab. */}
+        <iframe
+          src={embedHref}
+          title={book.title}
+          style={{
+            width: '100%',
+            height: '78vh',
+            border: `1px solid ${theme.frameBorder}`,
+            borderRadius: 10,
+            background: theme.frame,
+            boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+          }}
+        />
 
         <div style={{ marginTop: 12 }}>
           <a
