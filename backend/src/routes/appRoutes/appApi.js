@@ -8,8 +8,12 @@ const { routesList } = require('@/models/utils');
 const { singleStorageUpload } = require('@/middlewares/uploadMiddleware');
 const videoLessonUpload = require('@/controllers/appControllers/videoLessonUpload');
 const bookUpload = require('@/controllers/appControllers/bookUpload');
+const bookCoverUpload = require('@/controllers/appControllers/bookCoverUpload');
 const rewardUpload = require('@/controllers/appControllers/rewardUpload');
+const clientUpload = require('@/controllers/appControllers/clientUpload');
 const testAiImport = require('@/controllers/appControllers/testAiImport');
+const faceRoster = require('@/controllers/appControllers/attendanceController/faceRoster');
+const faceCheckin = require('@/controllers/appControllers/attendanceController/faceCheckin');
 
 // In-memory only — the .docx is read once to extract text for the AI
 // prompt and never needs to touch disk.
@@ -46,6 +50,10 @@ const routerApp = (entity, controller) => {
       singleStorageUpload({ entity: 'book', fieldName: 'fileUrl', fileType: 'pdf' }),
       catchErrors(bookUpload)
     );
+    router.route(`/${entity}/upload-cover`).post(
+      singleStorageUpload({ entity: 'book', fieldName: 'coverImage', fileType: 'image' }),
+      catchErrors(bookCoverUpload)
+    );
   }
 
   if (entity === 'reward') {
@@ -55,11 +63,23 @@ const routerApp = (entity, controller) => {
     );
   }
 
+  if (entity === 'client') {
+    router.route(`/${entity}/upload`).post(
+      singleStorageUpload({ entity: 'client', fieldName: 'photo', fileType: 'image' }),
+      catchErrors(clientUpload)
+    );
+  }
+
   if (entity === 'test') {
     router
       .route(`/${entity}/ai-parse`)
       .post(memoryUpload, catchErrors(testAiImport.parseFile));
     router.route(`/${entity}/ai-import`).post(catchErrors(testAiImport.confirmImport));
+  }
+
+  if (entity === 'attendance') {
+    router.route('/attendance/face-roster').get(catchErrors(faceRoster));
+    router.route('/attendance/face-checkin').post(catchErrors(faceCheckin));
   }
 };
 

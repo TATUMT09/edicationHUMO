@@ -4,6 +4,7 @@ import { Card, List, Spin, Empty, Input, Select, Tag, Segmented } from 'antd';
 import { ReadOutlined, StarFilled } from '@ant-design/icons';
 
 import portalRequest from '@/request/portalRequest';
+import { BASE_URL } from '@/config/serverApiConfig';
 
 const LEVEL_OPTIONS = [
   { value: 'beginner', label: "Boshlang'ich" },
@@ -20,10 +21,22 @@ const CATEGORY_OPTIONS = [
 function BookCard({ book, navigate, highlighted }) {
   return (
     <List.Item>
-      <Card hoverable onClick={() => navigate(`/portal/books/${book._id}`)}>
+      <Card
+        hoverable
+        onClick={() => navigate(`/portal/books/${book._id}`)}
+        cover={
+          book.coverImage ? (
+            <img
+              src={BASE_URL + book.coverImage}
+              alt={book.title}
+              style={{ height: 180, objectFit: 'cover', borderBottom: '1px solid #f0f0f0' }}
+            />
+          ) : undefined
+        }
+      >
         <Card.Meta
           avatar={
-            highlighted ? (
+            book.coverImage ? undefined : highlighted ? (
               <StarFilled style={{ fontSize: 24, color: '#faad14' }} />
             ) : (
               <ReadOutlined style={{ fontSize: 24, color: '#1640D6' }} />

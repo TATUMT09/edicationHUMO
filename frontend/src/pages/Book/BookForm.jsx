@@ -4,6 +4,8 @@ import { UploadOutlined, FileDoneOutlined } from '@ant-design/icons';
 
 import SelectAsync from '@/components/SelectAsync';
 import { request } from '@/request';
+import { BASE_URL } from '@/config/serverApiConfig';
+import { renderPdfFirstPageToBlob } from '@/utils/pdfCover';
 
 const { TextArea } = Input;
 
@@ -23,15 +25,34 @@ export default function BookForm() {
   const [uploading, setUploading] = useState(false);
   const category = Form.useWatch('category', form) || 'study';
   const fileUrl = Form.useWatch('fileUrl', form);
+  const coverImage = Form.useWatch('coverImage', form);
 
   const uploadBook = async (file) => {
     setUploading(true);
     const data = await request.uploadFile({ entity: 'book', file });
-    setUploading(false);
     if (data.success) {
       form.setFieldValue('fileUrl', data.result.fileUrl);
       message.success('Fayl yuklandi');
     }
+
+    // Best-effort — a book with no on-screen cover just falls back to the
+    // generic icon, so a render failure here shouldn't block the upload.
+    try {
+      const coverBlob = await renderPdfFirstPageToBlob(file);
+      const coverFile = new File([coverBlob], 'cover.jpg', { type: 'image/jpeg' });
+      const coverData = await request.uploadFile({
+        entity: 'book',
+        file: coverFile,
+        path: 'book/upload-cover',
+      });
+      if (coverData.success) {
+        form.setFieldValue('coverImage', coverData.result.coverImage);
+      }
+    } catch (err) {
+      // no cover — fine, the icon placeholder covers it
+    }
+
+    setUploading(false);
     return false;
   };
 
@@ -77,8 +98,17 @@ export default function BookForm() {
           </Button>
         </Upload>
         {fileUrl && (
-          <div style={{ marginTop: 8, color: '#52c41a' }}>
-            <FileDoneOutlined /> Fayl yuklandi
+          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+            {coverImage && (
+              <img
+                src={BASE_URL + coverImage}
+                alt="Muqova"
+                style={{ height: 60, borderRadius: 4, border: '1px solid #f0f0f0' }}
+              />
+            )}
+            <span style={{ color: '#52c41a' }}>
+              <FileDoneOutlined /> Fayl yuklandi
+            </span>
           </div>
         )}
         <Form.Item
@@ -86,6 +116,9 @@ export default function BookForm() {
           rules={[{ required: true, message: 'PDF fayl yuklang' }]}
           style={{ marginBottom: 0 }}
         >
+          <Input type="hidden" />
+        </Form.Item>
+        <Form.Item name="coverImage" style={{ marginBottom: 0 }}>
           <Input type="hidden" />
         </Form.Item>
       </Form.Item>

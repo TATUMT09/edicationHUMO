@@ -4,6 +4,7 @@ import { Card, List, Spin, Empty, Tag, Segmented } from 'antd';
 import { PlayCircleOutlined, FileTextOutlined, ReadOutlined, CheckCircleFilled } from '@ant-design/icons';
 
 import portalRequest from '@/request/portalRequest';
+import { BASE_URL } from '@/config/serverApiConfig';
 
 const LEVEL_LABELS = { beginner: "Boshlang'ich", intermediate: "O'rta", advanced: 'Yuqori' };
 const TEST_TYPE_LABELS = { closed: 'Yopiq test', open: 'Ochiq test', quiz: 'Kviz' };
@@ -66,10 +67,24 @@ export default function PortalContentListPage() {
           dataSource={items}
           renderItem={(item) => (
             <List.Item>
-              <Card hoverable onClick={() => navigate(pathFor(item))}>
+              <Card
+                hoverable
+                onClick={() => navigate(pathFor(item))}
+                cover={
+                  item.kind === 'book' && item.coverImage ? (
+                    <img
+                      src={BASE_URL + item.coverImage}
+                      alt={item.title}
+                      style={{ height: 160, objectFit: 'cover', borderBottom: '1px solid #f0f0f0' }}
+                    />
+                  ) : undefined
+                }
+              >
                 <Card.Meta
                   avatar={
-                    item.kind === 'video' ? (
+                    item.kind === 'book' && item.coverImage
+                      ? undefined
+                      : item.kind === 'video' ? (
                       <PlayCircleOutlined style={{ fontSize: 24, color: '#1640D6' }} />
                     ) : item.kind === 'book' ? (
                       <ReadOutlined style={{ fontSize: 24, color: '#1640D6' }} />
