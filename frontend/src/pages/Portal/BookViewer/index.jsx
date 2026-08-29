@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Spin, Empty, Button, Card } from 'antd';
-import { FilePdfOutlined, DownloadOutlined } from '@ant-design/icons';
+import { useParams, Link } from 'react-router-dom';
+import { Spin, Empty, Card } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 
 import portalRequest from '@/request/portalRequest';
 import { BASE_URL } from '@/config/serverApiConfig';
@@ -30,22 +30,27 @@ export default function PortalBookViewerPage() {
 
   return (
     <div>
-      <Card>
-        <FilePdfOutlined style={{ fontSize: 48, color: '#cf1322', marginBottom: 16 }} />
-        <h2>{book.title}</h2>
-        {book.author && <p>Muallif: {book.author}</p>}
-        {book.description && <p>{book.description}</p>}
-        <Button
-          type="primary"
-          size="large"
-          icon={<DownloadOutlined />}
-          href={fileHref}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Kitobni ochish
-        </Button>
+      <Card style={{ marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>{book.title}</h2>
+        {book.author && <p style={{ margin: '4px 0 0' }}>Muallif: {book.author}</p>}
+        {book.description && <p style={{ margin: '4px 0 0' }}>{book.description}</p>}
       </Card>
+
+      {/* Rendered by the browser's own PDF viewer, right here on the page —
+          no new tab. */}
+      <iframe
+        src={fileHref}
+        title={book.title}
+        style={{ width: '100%', height: '80vh', border: '1px solid #f0f0f0', borderRadius: 8 }}
+      />
+
+      <div style={{ marginTop: 12 }}>
+        <a href={fileHref} target="_blank" rel="noopener noreferrer">
+          <DownloadOutlined /> Yuklab olish / yangi oynada ochish
+        </a>
+        {' · '}
+        <Link to="/portal/library">Kutubxonaga qaytish</Link>
+      </div>
     </div>
   );
 }
