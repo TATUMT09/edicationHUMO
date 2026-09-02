@@ -154,11 +154,16 @@ async function tryDeliverStudentCode(chatId, token) {
     await student.save();
   }
 
+  // No parse_mode here on purpose — student.name is arbitrary user input,
+  // and Telegram's "Markdown" mode 400s the *entire send* if it contains
+  // any unescaped _, *, `, or [ (an apostrophe in an Uzbek name is enough).
+  // That was silently swallowing every code-delivery attempt for any
+  // student whose name happened to trip it — this is the one message that
+  // must never fail to send over a formatting quirk.
   await bot.sendMessage(
     chatId,
     `Assalomu alaykum${student ? ', ' + student.name : ''}!\n\n` +
-      `Tasdiqlash kodingiz: *${code}*\n\nBu kodni saytga qaytib kiriting.`,
-    { parse_mode: 'Markdown' }
+      `Tasdiqlash kodingiz: ${code}\n\nBu kodni saytga qaytib kiriting.`
   );
   return true;
 }
