@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Form, Button, Input, Divider } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
 
-import useLanguage from '@/locale/useLanguage';
 import { portalVerifyCode, portalResendCode } from '@/redux/portalAuth/actions';
 import { selectPortalAuth, selectPendingTelegramLinkToken } from '@/redux/portalAuth/selectors';
 import Loading from '@/components/Loading';
@@ -14,7 +13,6 @@ const RESEND_COOLDOWN_SECONDS = 60;
 const TELEGRAM_BOT_USERNAME = 'HUMO_EDUKATION_bot';
 
 export default function PortalVerifyCodePage() {
-  const translate = useLanguage();
   const { isLoading, isSuccess, pendingVerificationEmail } = useSelector(selectPortalAuth);
   const telegramLinkToken = useSelector(selectPendingTelegramLinkToken);
   const navigate = useNavigate();
@@ -49,10 +47,26 @@ export default function PortalVerifyCodePage() {
 
   const FormContainer = () => (
     <Loading isLoading={isLoading}>
-      <p>
-        <b>{pendingVerificationEmail}</b> manziliga 6 xonali tasdiqlash kodi yuborildi. Kodni pastga
-        kiriting.
-      </p>
+      {telegramLinkToken && (
+        <>
+          <p style={{ textAlign: 'center', marginBottom: 12 }}>
+            Tasdiqlash kodini olish uchun botni oching:
+          </p>
+          <Button
+            block
+            size="large"
+            icon={<SendOutlined />}
+            style={{ background: '#229ED9', color: '#fff', border: 'none' }}
+            href={`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${telegramLinkToken}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Telegram orqali kodni olish
+          </Button>
+          <Divider>keyin shu yerga kiriting</Divider>
+        </>
+      )}
+
       <Form layout="vertical" name="portal_verify" onFinish={onFinish}>
         <Form.Item
           label="Tasdiqlash kodi"
@@ -73,29 +87,9 @@ export default function PortalVerifyCodePage() {
           </Button>
         </Form.Item>
         <Button type="link" onClick={onResend} disabled={cooldown > 0} loading={resending}>
-          {cooldown > 0 ? `Qayta yuborish (${cooldown}s)` : 'Kodni qayta yuborish'}
+          {cooldown > 0 ? `Kodni qayta olish (${cooldown}s)` : 'Kodni qayta olish'}
         </Button>
       </Form>
-
-      {telegramLinkToken && (
-        <>
-          <Divider>yoki</Divider>
-          <p style={{ textAlign: 'center', marginBottom: 12 }}>
-            Email kelmayaptimi? Kodni Telegram orqali oling:
-          </p>
-          <Button
-            block
-            size="large"
-            icon={<SendOutlined />}
-            style={{ background: '#229ED9', color: '#fff', border: 'none' }}
-            href={`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${telegramLinkToken}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Telegram orqali kodni olish
-          </Button>
-        </>
-      )}
     </Loading>
   );
 

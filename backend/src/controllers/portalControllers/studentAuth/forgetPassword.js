@@ -1,8 +1,8 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
+const { generate: uniqueId } = require('shortid');
 
 const generateCode = require('@/utils/generateCode');
-const sendMail = require('@/controllers/middlewaresControllers/createAuthMiddleware/sendMail');
 
 const forgetPassword = async (req, res) => {
   const Student = mongoose.model('Student');
@@ -34,25 +34,26 @@ const forgetPassword = async (req, res) => {
   }
 
   const { code, expires } = generateCode();
+  const telegramLinkToken = uniqueId() + uniqueId();
 
   await StudentPassword.findOneAndUpdate(
     { user: student._id },
-    { resetCode: code, resetCodeExpires: expires, resetCodeAttempts: 0 },
+    {
+      resetCode: code,
+      resetCodeExpires: expires,
+      resetCodeAttempts: 0,
+      telegramLinkToken,
+    },
     { new: true }
   ).exec();
 
-  await sendMail({
-    email: student.email,
-    name: student.name,
-    code,
-    subject: 'HUMO Education - parolni tiklash kodi',
-    type: 'emailVerificationCode',
-  });
-
+  // Code delivery is Telegram-only now — see tryDeliverStudentCode in
+  // bot/telegramBot.js for the actual send (same deep-link pattern as
+  // register.js/resendCode.js use for the verification code).
   return res.status(200).json({
     success: true,
-    result: null,
-    message: 'Parolni tiklash kodi emailingizga yuborildi.',
+    result: { telegramLinkToken },
+    message: "Parolni tiklash kodini Telegram orqali oling.",
   });
 };
 

@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const { generate: uniqueId } = require('shortid');
 
 const generateCode = require('@/utils/generateCode');
-const sendMail = require('@/controllers/middlewaresControllers/createAuthMiddleware/sendMail');
 
 const RESEND_COOLDOWN_MS = 60 * 1000;
 
@@ -66,18 +65,10 @@ const resendCode = async (req, res) => {
     }
   ).exec();
 
-  await sendMail({
-    email: student.email,
-    name: student.name,
-    code,
-    subject: 'HUMO Education - tasdiqlash kodi',
-    type: 'emailVerificationCode',
-  });
-
   return res.status(200).json({
     success: true,
     result: { telegramLinkToken },
-    message: 'Kod qaytadan yuborildi.',
+    message: "Yangi kod tayyor — Telegram orqali oling.",
   });
 };
 

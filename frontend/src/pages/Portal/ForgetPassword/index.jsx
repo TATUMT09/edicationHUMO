@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button, Input, Result } from 'antd';
-import { MailOutlined } from '@ant-design/icons';
+import { MailOutlined, SendOutlined } from '@ant-design/icons';
 
 import useLanguage from '@/locale/useLanguage';
 import portalRequest from '@/request/portalRequest';
 import Loading from '@/components/Loading';
 import AuthModule from '@/modules/AuthModule';
+
+const TELEGRAM_BOT_USERNAME = 'HUMO_EDUKATION_bot';
 
 export default function PortalForgetPasswordPage() {
   const translate = useLanguage();
@@ -14,6 +16,7 @@ export default function PortalForgetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [email, setEmail] = useState('');
+  const [telegramLinkToken, setTelegramLinkToken] = useState('');
 
   const onFinish = async (values) => {
     setIsLoading(true);
@@ -21,6 +24,7 @@ export default function PortalForgetPasswordPage() {
     setIsLoading(false);
     if (data.success) {
       setEmail(values.email);
+      setTelegramLinkToken(data.result?.telegramLinkToken || '');
       setIsSuccess(true);
     }
   };
@@ -56,15 +60,29 @@ export default function PortalForgetPasswordPage() {
       authContent={
         <Result
           status="success"
-          title="Tiklash kodi yuborildi"
-          subTitle={`${email} manziliga kod yuborildi`}
+          title="Kod tayyor"
+          subTitle={`${email} uchun tiklash kodi tayyorlandi — Telegram orqali oling`}
           extra={
-            <Button
-              type="primary"
-              onClick={() => navigate('/portal/resetpassword', { state: { email } })}
-            >
-              Kodni kiritish
-            </Button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {telegramLinkToken && (
+                <Button
+                  size="large"
+                  icon={<SendOutlined />}
+                  style={{ background: '#229ED9', color: '#fff', border: 'none' }}
+                  href={`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${telegramLinkToken}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Telegram orqali kodni olish
+                </Button>
+              )}
+              <Button
+                type="primary"
+                onClick={() => navigate('/portal/resetpassword', { state: { email } })}
+              >
+                Kodni kiritish
+              </Button>
+            </div>
           }
         />
       }

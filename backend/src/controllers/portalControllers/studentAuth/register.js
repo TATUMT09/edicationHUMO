@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const { generate: uniqueId } = require('shortid');
 
 const generateCode = require('@/utils/generateCode');
-const sendMail = require('@/controllers/middlewaresControllers/createAuthMiddleware/sendMail');
 
 const register = async (req, res) => {
   const Student = mongoose.model('Student');
@@ -99,18 +98,13 @@ const register = async (req, res) => {
     { upsert: true, new: true }
   ).exec();
 
-  await sendMail({
-    email: normalizedEmail,
-    name: student.name,
-    code,
-    subject: 'HUMO Education - tasdiqlash kodi',
-    type: 'emailVerificationCode',
-  });
-
+  // Code delivery is Telegram-only now — Gmail's silent spam-filtering on
+  // unfamiliar recipients made email an unreliable primary channel (see
+  // tryDeliverStudentCode in bot/telegramBot.js for the actual send).
   return res.status(200).json({
     success: true,
     result: { email: normalizedEmail, telegramLinkToken },
-    message: 'Tasdiqlash kodi emailingizga yuborildi.',
+    message: "Tasdiqlash kodini Telegram orqali oling.",
   });
 };
 
