@@ -1,11 +1,25 @@
 const mongoose = require('mongoose');
+const { getTeacherSubjectId } = require('@/utils/teacherScope');
 
 const confirmImport = async (req, res) => {
   const Test = mongoose.model('Test');
   const Question = mongoose.model('Question');
   const Subject = mongoose.model('Subject');
 
-  const { title, subject, level, testType, questions } = req.body;
+  const { title, level, testType, questions } = req.body;
+  let { subject } = req.body;
+
+  // A teacher can only import into their own subject, regardless of what
+  // was picked/sent from the client (mirrors testController.create).
+  const teacherSubjectId = getTeacherSubjectId(req.admin);
+  if (teacherSubjectId === null) {
+    return res.status(403).json({
+      success: false,
+      result: null,
+      message: "Sizga hali fan biriktirilmagan. Administratorga murojaat qiling.",
+    });
+  }
+  if (teacherSubjectId) subject = teacherSubjectId;
 
   if (!title || !subject || !level || !testType) {
     return res.status(409).json({

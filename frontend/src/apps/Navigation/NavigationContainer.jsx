@@ -27,7 +27,6 @@ import {
   FileTextOutlined,
   QuestionCircleOutlined,
   PlayCircleOutlined,
-  CloudUploadOutlined,
   ReadOutlined,
   GiftOutlined,
   ShoppingCartOutlined,
@@ -127,9 +126,9 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/question'}>{translate('questions')}</Link>,
     },
     {
-      key: 'test-ai-import',
-      icon: <CloudUploadOutlined />,
-      label: <Link to={'/test/ai-import'}>AI orqali test yuklash</Link>,
+      key: 'test-stats',
+      icon: <BarChartOutlined />,
+      label: <Link to={'/test/stats'}>Savollar statistikasi</Link>,
     },
     {
       key: 'video-lesson',

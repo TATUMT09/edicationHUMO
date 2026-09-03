@@ -11,4 +11,13 @@ async function getTeacherGroupId(admin) {
   return group ? String(group._id) : null;
 }
 
-module.exports = { getTeacherGroupId };
+// Returns the id (string) of the subject this admin teaches.
+// - undefined: admin is not a teacher (e.g. owner/director) -> no restriction
+// - null: admin is a teacher but has no subject assigned -> should see nothing
+// - string: the single subject id this teacher is restricted to
+function getTeacherSubjectId(admin) {
+  if (!admin || admin.role !== 'teacher') return undefined;
+  return admin.subject ? String(admin.subject) : null;
+}
+
+module.exports = { getTeacherGroupId, getTeacherSubjectId };

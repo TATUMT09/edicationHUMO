@@ -17,14 +17,16 @@ const list = async (req, res) => {
   if (ownerOnly(req, res)) return;
 
   const Admin = mongoose.model('Admin');
-  const admins = await Admin.find({ removed: false }, '-photo').sort({ created: -1 });
+  const admins = await Admin.find({ removed: false }, '-photo')
+    .populate('subject')
+    .sort({ created: -1 });
   return res.status(200).json({ success: true, result: admins, message: 'Successfully found' });
 };
 
 const create = async (req, res) => {
   if (ownerOnly(req, res)) return;
 
-  const { email, name, surname, password, role } = req.body;
+  const { email, name, surname, password, role, subject } = req.body;
   if (!email || !name || !password) {
     return res.status(400).json({
       success: false,
@@ -50,6 +52,7 @@ const create = async (req, res) => {
     name,
     surname: surname || '',
     role: role === 'owner' ? 'owner' : 'teacher',
+    subject: role === 'owner' ? undefined : subject || undefined,
     enabled: true,
   }).save();
 
@@ -69,7 +72,7 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   if (ownerOnly(req, res)) return;
 
-  const { name, surname, role, password, enabled } = req.body;
+  const { name, surname, role, password, enabled, subject } = req.body;
   const Admin = mongoose.model('Admin');
   const AdminPassword = mongoose.model('AdminPassword');
 
@@ -80,9 +83,11 @@ const update = async (req, res) => {
       ...(surname !== undefined && { surname }),
       ...(role !== undefined && { role }),
       ...(enabled !== undefined && { enabled }),
+      ...(subject !== undefined && { subject: subject || null }),
+      ...(role === 'owner' && { subject: null }),
     },
     { new: true }
-  );
+  ).populate('subject');
 
   if (!admin) {
     return res.status(404).json({ success: false, result: null, message: 'Topilmadi' });

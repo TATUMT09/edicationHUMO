@@ -1,3 +1,7 @@
+import { Link } from 'react-router-dom';
+import { Button } from 'antd';
+import { CloudUploadOutlined } from '@ant-design/icons';
+
 import CrudModule from '@/modules/CrudModule/CrudModule';
 import DynamicForm from '@/forms/DynamicForm';
 import { fields } from './config';
@@ -30,10 +34,17 @@ export default function Test() {
     deleteModalLabels,
   };
   return (
-    <CrudModule
-      createForm={<DynamicForm fields={fields} />}
-      updateForm={<DynamicForm fields={fields} />}
-      config={config}
-    />
+    <>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+        <Link to="/test/ai-import">
+          <Button icon={<CloudUploadOutlined />}>Fayldan yuklash (AI)</Button>
+        </Link>
+      </div>
+      <CrudModule
+        createForm={<DynamicForm fields={fields} />}
+        updateForm={<DynamicForm fields={fields} />}
+        config={config}
+      />
+    </>
   );
 }

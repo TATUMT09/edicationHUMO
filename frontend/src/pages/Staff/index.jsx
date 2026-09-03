@@ -27,6 +27,7 @@ export default function Staff() {
   const { isMobile } = useResponsive();
   const [staff, setStaff] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -39,9 +40,11 @@ export default function Staff() {
     Promise.all([
       request.list({ entity: 'staff' }),
       request.listAll({ entity: 'group' }),
-    ]).then(([staffRes, groupsRes]) => {
+      request.listAll({ entity: 'subject' }),
+    ]).then(([staffRes, groupsRes, subjectsRes]) => {
       setStaff(staffRes.success ? staffRes.result : []);
       setGroups(groupsRes.success ? groupsRes.result : []);
+      setSubjects(subjectsRes.success ? subjectsRes.result : []);
       setIsLoading(false);
     });
   };
@@ -64,6 +67,7 @@ export default function Staff() {
       name: person.name,
       email: person.email,
       role: person.role,
+      subject: person.subject?._id || person.subject || undefined,
       password: undefined,
     });
     setModalOpen(true);
@@ -97,6 +101,7 @@ export default function Staff() {
     return (
       <>
         <Tag color={person.role === 'owner' ? 'gold' : 'blue'}>{ROLE_LABELS[person.role]}</Tag>
+        {person.subject?.name && <Tag color="purple">{person.subject.name}</Tag>}
         {taughtGroup && <Tag color="green">{taughtGroup.name}</Tag>}
       </>
     );
@@ -251,6 +256,22 @@ export default function Staff() {
                 { value: 'owner', label: 'Administrator (hammasini boshqaradi)' },
               ]}
             />
+          </Form.Item>
+          <Form.Item noStyle shouldUpdate={(prev, cur) => prev.role !== cur.role}>
+            {({ getFieldValue }) =>
+              getFieldValue('role') === 'teacher' && (
+                <Form.Item
+                  name="subject"
+                  label="Fan"
+                  rules={[{ required: true, message: "Fan tanlanishi shart" }]}
+                >
+                  <Select
+                    placeholder="Fanni tanlang"
+                    options={subjects.map((s) => ({ value: s._id, label: s.name }))}
+                  />
+                </Form.Item>
+              )
+            }
           </Form.Item>
           <Form.Item
             name="password"

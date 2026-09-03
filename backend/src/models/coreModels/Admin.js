@@ -32,6 +32,12 @@ const adminSchema = new Schema({
     default: 'owner',
     enum: ['owner', 'teacher'],
   },
+  // Only meaningful when role === 'teacher' — scopes Test/Question CRUD to
+  // this subject (see backend/src/utils/teacherScope.js).
+  subject: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Subject',
+  },
   telegramChatId: {
     type: String,
   },

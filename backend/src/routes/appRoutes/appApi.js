@@ -12,6 +12,7 @@ const bookCoverUpload = require('@/controllers/appControllers/bookCoverUpload');
 const rewardUpload = require('@/controllers/appControllers/rewardUpload');
 const clientUpload = require('@/controllers/appControllers/clientUpload');
 const testAiImport = require('@/controllers/appControllers/testAiImport');
+const testController = require('@/controllers/appControllers/testController');
 const faceRoster = require('@/controllers/appControllers/attendanceController/faceRoster');
 const faceCheckin = require('@/controllers/appControllers/attendanceController/faceCheckin');
 
@@ -75,6 +76,7 @@ const routerApp = (entity, controller) => {
       .route(`/${entity}/ai-parse`)
       .post(memoryUpload, catchErrors(testAiImport.parseFile));
     router.route(`/${entity}/ai-import`).post(catchErrors(testAiImport.confirmImport));
+    router.route(`/${entity}/stats/:id`).get(catchErrors(testController.questionStats));
   }
 
   if (entity === 'attendance') {
