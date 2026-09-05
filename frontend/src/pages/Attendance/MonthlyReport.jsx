@@ -6,6 +6,7 @@ import * as XLSX from 'xlsx';
 
 import { request } from '@/request';
 import useResponsive from '@/hooks/useResponsive';
+import useLastSelectedGroup from '@/hooks/useLastSelectedGroup';
 
 // A real .xlsx sidesteps CSV's locale-dependent delimiter ("," vs ";")
 // entirely — cells land in real columns no matter how Excel is configured.
@@ -19,7 +20,7 @@ function downloadXlsx(filename, rows) {
 export default function AttendanceReport() {
   const { isMobile } = useResponsive();
   const [groups, setGroups] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState(undefined);
+  const [selectedGroup, setSelectedGroup] = useLastSelectedGroup(groups);
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
   const [students, setStudents] = useState([]);
   const [records, setRecords] = useState([]);
@@ -150,12 +151,14 @@ export default function AttendanceReport() {
       >
         <Select
           placeholder="Guruhni tanlang"
+          size="large"
           style={{ width: isMobile ? '100%' : 240 }}
           value={selectedGroup}
           onChange={setSelectedGroup}
           options={groups.map((g) => ({ value: g._id, label: g.name }))}
         />
         <DatePicker
+          size="large"
           picker="month"
           value={selectedMonth}
           onChange={(date) => date && setSelectedMonth(date)}
@@ -163,6 +166,7 @@ export default function AttendanceReport() {
           style={isMobile ? { width: '100%' } : undefined}
         />
         <Button
+          size="large"
           icon={<DownloadOutlined />}
           onClick={handleExport}
           disabled={!selectedGroup || students.length === 0}

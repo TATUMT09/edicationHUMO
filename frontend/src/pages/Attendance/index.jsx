@@ -1,28 +1,50 @@
 import { useEffect, useState } from 'react';
-import { Select, DatePicker, Table, Switch, Button, Card, message, Empty, Tag, List } from 'antd';
+import { Select, DatePicker, Table, Button, Card, message, Empty, Tag, List } from 'antd';
 import { SaveOutlined, SendOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 import { request } from '@/request';
 import useResponsive from '@/hooks/useResponsive';
+import useLastSelectedGroup from '@/hooks/useLastSelectedGroup';
 
 // Defined outside Attendance so its identity is stable across renders —
-// an inline closure would make React remount the <Switch> on every toggle.
-function StatusSwitch({ status, onToggle }) {
+// an inline closure would make React remount the buttons on every toggle.
+// Two big, clearly-labelled buttons instead of a small switch — much easier
+// to tap correctly (and to read at a glance) for a non-technical user.
+function StatusSwitch({ status, onToggle, block }) {
+  const isPresent = status === 'present';
   return (
-    <Switch
-      checked={status === 'present'}
-      checkedChildren={<CheckOutlined />}
-      unCheckedChildren={<CloseOutlined />}
-      onChange={onToggle}
-    />
+    <div style={{ display: 'flex', gap: 8, width: block ? '100%' : undefined }}>
+      <Button
+        type={isPresent ? 'primary' : 'default'}
+        size="large"
+        icon={<CheckOutlined />}
+        style={{
+          ...(block && { flex: 1 }),
+          ...(isPresent && { background: '#389e0d', borderColor: '#389e0d' }),
+        }}
+        onClick={() => !isPresent && onToggle()}
+      >
+        Keldi
+      </Button>
+      <Button
+        type={!isPresent ? 'primary' : 'default'}
+        danger={!isPresent}
+        size="large"
+        icon={<CloseOutlined />}
+        style={block ? { flex: 1 } : undefined}
+        onClick={() => isPresent && onToggle()}
+      >
+        Kelmadi
+      </Button>
+    </div>
   );
 }
 
 export default function Attendance() {
   const { isMobile } = useResponsive();
   const [groups, setGroups] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState(undefined);
+  const [selectedGroup, setSelectedGroup] = useLastSelectedGroup(groups);
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [students, setStudents] = useState([]);
   const [statusMap, setStatusMap] = useState({});
@@ -175,19 +197,35 @@ export default function Attendance() {
       >
         <Select
           placeholder="Guruhni tanlang"
+          size="large"
           style={{ width: isMobile ? '100%' : 240 }}
           value={selectedGroup}
           onChange={setSelectedGroup}
           options={groups.map((g) => ({ value: g._id, label: g.name }))}
         />
         <DatePicker
+          size="large"
           value={selectedDate}
           onChange={(date) => date && setSelectedDate(date)}
           allowClear={false}
           style={isMobile ? { width: '100%' } : undefined}
         />
+        {selectedGroup && students.length > 0 && (
+          <Tag
+            color="blue"
+            style={{
+              fontSize: '18px',
+              padding: '6px 14px',
+              alignSelf: isMobile ? 'stretch' : 'center',
+              textAlign: 'center',
+            }}
+          >
+            Keldi: {presentCount} / {students.length}
+          </Tag>
+        )}
         <Button
           type="primary"
+          size="large"
           icon={<SaveOutlined />}
           onClick={handleSave}
           loading={isSaving}
@@ -197,6 +235,7 @@ export default function Attendance() {
           Saqlash
         </Button>
         <Button
+          size="large"
           icon={<SendOutlined />}
           onClick={handleSendNotice}
           loading={isSendingNotice}
@@ -205,39 +244,34 @@ export default function Attendance() {
         >
           Xabar yuborish
         </Button>
-        {selectedGroup && students.length > 0 && (
-          <Tag
-            color="blue"
-            style={{
-              fontSize: '14px',
-              padding: '4px 10px',
-              alignSelf: isMobile ? 'flex-start' : 'center',
-            }}
-          >
-            Keldi: {presentCount} / {students.length}
-          </Tag>
-        )}
       </div>
 
       {!selectedGroup ? (
         <Empty description="Guruhni tanlang" />
       ) : isMobile ? (
         <List
-          bordered
           loading={isLoading}
           dataSource={students}
           renderItem={(student) => (
-            <List.Item
-              key={student._id}
-              actions={[
+            <List.Item key={student._id} style={{ padding: 0, marginBottom: 12 }}>
+              <div
+                style={{
+                  width: '100%',
+                  border: '1px solid #f0f0f0',
+                  borderRadius: 10,
+                  padding: 14,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}
+              >
+                <span style={{ fontSize: 18, fontWeight: 600 }}>{student.name}</span>
                 <StatusSwitch
-                  key="switch"
+                  block
                   status={statusMap[student._id] || 'present'}
                   onToggle={() => toggleStatus(student._id)}
-                />,
-              ]}
-            >
-              {student.name}
+                />
+              </div>
             </List.Item>
           )}
         />
@@ -249,6 +283,7 @@ export default function Attendance() {
           loading={isLoading}
           pagination={false}
           scroll={{ x: true }}
+          style={{ fontSize: 16 }}
         />
       )}
     </Card>
