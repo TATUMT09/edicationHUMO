@@ -211,39 +211,39 @@ export default function Attendance() {
           style={isMobile ? { width: '100%' } : undefined}
         />
         {selectedGroup && students.length > 0 && (
-          <Tag
-            color="blue"
-            style={{
-              fontSize: '18px',
-              padding: '6px 14px',
-              alignSelf: isMobile ? 'stretch' : 'center',
-              textAlign: 'center',
-            }}
-          >
-            Keldi: {presentCount} / {students.length}
-          </Tag>
+          <>
+            <Tag
+              color="blue"
+              style={{
+                fontSize: '18px',
+                padding: '6px 14px',
+                alignSelf: isMobile ? 'stretch' : 'center',
+                textAlign: 'center',
+              }}
+            >
+              Keldi: {presentCount} / {students.length}
+            </Tag>
+            <Button
+              type="primary"
+              size="large"
+              icon={<SaveOutlined />}
+              onClick={handleSave}
+              loading={isSaving}
+              block={isMobile}
+            >
+              Saqlash
+            </Button>
+            <Button
+              size="large"
+              icon={<SendOutlined />}
+              onClick={handleSendNotice}
+              loading={isSendingNotice}
+              block={isMobile}
+            >
+              Xabar yuborish
+            </Button>
+          </>
         )}
-        <Button
-          type="primary"
-          size="large"
-          icon={<SaveOutlined />}
-          onClick={handleSave}
-          loading={isSaving}
-          disabled={!selectedGroup || students.length === 0}
-          block={isMobile}
-        >
-          Saqlash
-        </Button>
-        <Button
-          size="large"
-          icon={<SendOutlined />}
-          onClick={handleSendNotice}
-          loading={isSendingNotice}
-          disabled={!selectedGroup || students.length === 0}
-          block={isMobile}
-        >
-          Xabar yuborish
-        </Button>
       </div>
 
       {!selectedGroup ? (

@@ -40,7 +40,7 @@ export default function Navigation() {
   return isMobile ? <MobileSidebar /> : <Sidebar collapsible={false} />;
 }
 
-function Sidebar({ collapsible, isMobile = false }) {
+function Sidebar({ collapsible, isMobile = false, onNavigate }) {
   let location = useLocation();
 
   const { state: stateApp, appContextAction } = useAppContext();
@@ -229,6 +229,7 @@ function Sidebar({ collapsible, isMobile = false }) {
         mode="inline"
         theme={'light'}
         selectedKeys={[currentPath]}
+        onClick={onNavigate}
         style={{
           width: 256,
         }}
@@ -265,7 +266,7 @@ function MobileSidebar() {
         onClose={onClose}
         open={visible}
       >
-        <Sidebar collapsible={false} isMobile={true} />
+        <Sidebar collapsible={false} isMobile={true} onNavigate={onClose} />
       </Drawer>
     </>
   );

@@ -17,6 +17,7 @@ import dayjs from 'dayjs';
 
 import { request } from '@/request';
 import useResponsive from '@/hooks/useResponsive';
+import useLastSelectedGroup from '@/hooks/useLastSelectedGroup';
 
 function formatSom(value) {
   return `${(value || 0).toLocaleString('ru-RU')} so'm`;
@@ -60,7 +61,7 @@ function StatusTag({ amount, paidAmount }) {
 export default function MonthlyPayment() {
   const { isMobile } = useResponsive();
   const [groups, setGroups] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState(undefined);
+  const [selectedGroup, setSelectedGroup] = useLastSelectedGroup(groups);
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
   const [students, setStudents] = useState([]);
   const [amountMap, setAmountMap] = useState({});
@@ -234,48 +235,53 @@ export default function MonthlyPayment() {
       >
         <Select
           placeholder="Guruhni tanlang"
+          size="large"
           style={{ width: isMobile ? '100%' : 240 }}
           value={selectedGroup}
           onChange={setSelectedGroup}
           options={groups.map((g) => ({ value: g._id, label: g.name }))}
         />
         <DatePicker
+          size="large"
           picker="month"
           value={selectedMonth}
           onChange={(date) => date && setSelectedMonth(date)}
           allowClear={false}
           style={isMobile ? { width: '100%' } : undefined}
         />
-        <Button
-          type="primary"
-          icon={<SaveOutlined />}
-          onClick={handleSave}
-          loading={isSaving}
-          disabled={!selectedGroup || students.length === 0}
-          block={isMobile}
-        >
-          Saqlash
-        </Button>
-        <Button
-          icon={<SendOutlined />}
-          onClick={handleSendReminder}
-          loading={isSendingReminder}
-          block={isMobile}
-        >
-          Eslatma yuborish
-        </Button>
         {selectedGroup && students.length > 0 && (
-          <Space wrap>
-            <Tag color="green" style={{ fontSize: '14px', padding: '4px 10px' }}>
-              To'langan: {paidCount}
-            </Tag>
-            <Tag color="orange" style={{ fontSize: '14px', padding: '4px 10px' }}>
-              Qisman: {partialCount}
-            </Tag>
-            <Tag color="red" style={{ fontSize: '14px', padding: '4px 10px' }}>
-              To'lanmagan: {students.length - paidCount - partialCount}
-            </Tag>
-          </Space>
+          <>
+            <Button
+              type="primary"
+              size="large"
+              icon={<SaveOutlined />}
+              onClick={handleSave}
+              loading={isSaving}
+              block={isMobile}
+            >
+              Saqlash
+            </Button>
+            <Button
+              size="large"
+              icon={<SendOutlined />}
+              onClick={handleSendReminder}
+              loading={isSendingReminder}
+              block={isMobile}
+            >
+              Eslatma yuborish
+            </Button>
+            <Space wrap>
+              <Tag color="green" style={{ fontSize: '14px', padding: '4px 10px' }}>
+                To'langan: {paidCount}
+              </Tag>
+              <Tag color="orange" style={{ fontSize: '14px', padding: '4px 10px' }}>
+                Qisman: {partialCount}
+              </Tag>
+              <Tag color="red" style={{ fontSize: '14px', padding: '4px 10px' }}>
+                To'lanmagan: {students.length - paidCount - partialCount}
+              </Tag>
+            </Space>
+          </>
         )}
       </div>
 

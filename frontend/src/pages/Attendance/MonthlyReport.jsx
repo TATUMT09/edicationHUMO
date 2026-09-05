@@ -195,15 +195,16 @@ export default function AttendanceReport() {
           allowClear={false}
           style={isMobile ? { width: '100%' } : undefined}
         />
-        <Button
-          size="large"
-          icon={<DownloadOutlined />}
-          onClick={handleExport}
-          disabled={!selectedGroup || students.length === 0}
-          block={isMobile}
-        >
-          Excelga yuklab olish
-        </Button>
+        {selectedGroup && students.length > 0 && days.length > 0 && (
+          <Button
+            size="large"
+            icon={<DownloadOutlined />}
+            onClick={handleExport}
+            block={isMobile}
+          >
+            Excelga yuklab olish
+          </Button>
+        )}
       </Space>
 
       {!selectedGroup ? (
