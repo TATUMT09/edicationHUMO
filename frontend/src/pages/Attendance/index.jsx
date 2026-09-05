@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Select, DatePicker, Table, Button, Card, message, Empty, Tag, List } from 'antd';
+import { Select, DatePicker, Table, Button, Card, message, Empty, Tag } from 'antd';
 import { SaveOutlined, SendOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -8,36 +8,25 @@ import useResponsive from '@/hooks/useResponsive';
 import useLastSelectedGroup from '@/hooks/useLastSelectedGroup';
 
 // Defined outside Attendance so its identity is stable across renders —
-// an inline closure would make React remount the buttons on every toggle.
-// Two big, clearly-labelled buttons instead of a small switch — much easier
-// to tap correctly (and to read at a glance) for a non-technical user.
-function StatusSwitch({ status, onToggle, block }) {
+// an inline closure would make React remount the button on every toggle.
+// One row per student, one tap to flip — like an Excel attendance sheet,
+// so the whole class fits on screen at once instead of one big card each.
+function StatusSwitch({ status, onToggle }) {
   const isPresent = status === 'present';
   return (
-    <div style={{ display: 'flex', gap: 8, width: block ? '100%' : undefined }}>
-      <Button
-        type={isPresent ? 'primary' : 'default'}
-        size="large"
-        icon={<CheckOutlined />}
-        style={{
-          ...(block && { flex: 1 }),
-          ...(isPresent && { background: '#389e0d', borderColor: '#389e0d' }),
-        }}
-        onClick={() => !isPresent && onToggle()}
-      >
-        Keldi
-      </Button>
-      <Button
-        type={!isPresent ? 'primary' : 'default'}
-        danger={!isPresent}
-        size="large"
-        icon={<CloseOutlined />}
-        style={block ? { flex: 1 } : undefined}
-        onClick={() => isPresent && onToggle()}
-      >
-        Kelmadi
-      </Button>
-    </div>
+    <Button
+      type="primary"
+      size="large"
+      icon={isPresent ? <CheckOutlined /> : <CloseOutlined />}
+      style={{
+        width: 120,
+        background: isPresent ? '#389e0d' : '#cf1322',
+        borderColor: isPresent ? '#389e0d' : '#cf1322',
+      }}
+      onClick={onToggle}
+    >
+      {isPresent ? 'Keldi' : 'Kelmadi'}
+    </Button>
   );
 }
 
@@ -171,10 +160,14 @@ export default function Attendance() {
     {
       title: "O'quvchi",
       dataIndex: 'name',
+      ellipsis: true,
+      render: (name) => <span style={{ fontSize: isMobile ? 15 : 16 }}>{name}</span>,
     },
     {
       title: 'Holat',
       dataIndex: '_id',
+      width: 132,
+      align: 'center',
       render: (_, student) => (
         <StatusSwitch
           status={statusMap[student._id] || 'present'}
@@ -248,33 +241,6 @@ export default function Attendance() {
 
       {!selectedGroup ? (
         <Empty description="Guruhni tanlang" />
-      ) : isMobile ? (
-        <List
-          loading={isLoading}
-          dataSource={students}
-          renderItem={(student) => (
-            <List.Item key={student._id} style={{ padding: 0, marginBottom: 12 }}>
-              <div
-                style={{
-                  width: '100%',
-                  border: '1px solid #f0f0f0',
-                  borderRadius: 10,
-                  padding: 14,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 10,
-                }}
-              >
-                <span style={{ fontSize: 18, fontWeight: 600 }}>{student.name}</span>
-                <StatusSwitch
-                  block
-                  status={statusMap[student._id] || 'present'}
-                  onToggle={() => toggleStatus(student._id)}
-                />
-              </div>
-            </List.Item>
-          )}
-        />
       ) : (
         <Table
           rowKey="_id"
@@ -282,8 +248,8 @@ export default function Attendance() {
           dataSource={students}
           loading={isLoading}
           pagination={false}
+          size={isMobile ? 'middle' : 'large'}
           scroll={{ x: true }}
-          style={{ fontSize: 16 }}
         />
       )}
     </Card>
