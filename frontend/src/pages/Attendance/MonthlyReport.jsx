@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Select, DatePicker, Table, Card, Empty, Tag, Button, Space } from 'antd';
-import { CheckOutlined, CloseOutlined, DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
 
@@ -51,16 +51,14 @@ export default function AttendanceReport() {
 
   const monthPrefix = selectedMonth.format('YYYY-MM');
 
-  // Every calendar day of the selected month is a column, like a paper
-  // attendance register — days with no record yet just render as "—".
+  // Only days the group actually had a lesson (i.e. has at least one
+  // attendance record) become a column — a group meeting 3x/week has ~13
+  // columns a month, not 30, which is what actually makes the whole month
+  // fit on a phone screen instead of needing to scroll through blank days.
   const days = useMemo(() => {
-    const daysInMonth = selectedMonth.daysInMonth();
-    const arr = [];
-    for (let d = 1; d <= daysInMonth; d++) {
-      arr.push(selectedMonth.date(d).format('YYYY-MM-DD'));
-    }
-    return arr;
-  }, [selectedMonth]);
+    const dates = new Set(records.filter((r) => r.date.startsWith(monthPrefix)).map((r) => r.date));
+    return [...dates].sort();
+  }, [records, monthPrefix]);
 
   const statusByStudentDate = useMemo(() => {
     const map = {};
@@ -82,9 +80,19 @@ export default function AttendanceReport() {
   };
 
   const renderCell = (status) => {
-    if (status === 'present') return <CheckOutlined style={{ color: '#389e0d' }} />;
-    if (status === 'absent') return <CloseOutlined style={{ color: '#cf1322' }} />;
-    return <span style={{ color: '#bfbfbf' }}>—</span>;
+    const size = isMobile ? 16 : 20;
+    const style = {
+      width: size,
+      height: size,
+      lineHeight: `${size}px`,
+      borderRadius: 4,
+      display: 'inline-block',
+      fontSize: isMobile ? 10 : 12,
+      color: '#fff',
+    };
+    if (status === 'present') return <span style={{ ...style, background: '#389e0d' }}>+</span>;
+    if (status === 'absent') return <span style={{ ...style, background: '#cf1322' }}>-</span>;
+    return <span style={{ color: '#d9d9d9' }}>—</span>;
   };
 
   const columns = [
@@ -92,39 +100,61 @@ export default function AttendanceReport() {
       title: "O'quvchi",
       dataIndex: 'name',
       fixed: 'left',
-      width: isMobile ? 96 : 160,
+      width: isMobile ? 82 : 160,
       ellipsis: true,
     },
     ...days.map((date) => ({
       title: dayjs(date).format('DD'),
       key: date,
-      width: isMobile ? 30 : 44,
+      width: isMobile ? 22 : 44,
       align: 'center',
       render: (_, student) => renderCell(statusByStudentDate[student._id]?.[date]),
     })),
-    {
-      title: 'Keldi',
-      key: 'present',
-      fixed: 'right',
-      width: isMobile ? 58 : 80,
-      align: 'center',
-      render: (_, student) => {
-        const { present, total } = studentTotals(student._id);
-        return <Tag color="blue">{`${present}/${total}`}</Tag>;
-      },
-    },
-    {
-      title: 'Foiz',
-      key: 'percent',
-      fixed: 'right',
-      width: isMobile ? 52 : 70,
-      align: 'center',
-      render: (_, student) => {
-        const { present, total } = studentTotals(student._id);
-        if (!total) return '—';
-        return `${Math.round((present / total) * 100)}%`;
-      },
-    },
+    ...(isMobile
+      ? [
+          {
+            title: 'Natija',
+            key: 'result',
+            fixed: 'right',
+            width: 56,
+            align: 'center',
+            render: (_, student) => {
+              const { present, total } = studentTotals(student._id);
+              const percent = total ? Math.round((present / total) * 100) : null;
+              return (
+                <div style={{ fontSize: 11, lineHeight: 1.3 }}>
+                  <div>{`${present}/${total}`}</div>
+                  <div style={{ color: '#8c8c8c' }}>{percent !== null ? `${percent}%` : '—'}</div>
+                </div>
+              );
+            },
+          },
+        ]
+      : [
+          {
+            title: 'Keldi',
+            key: 'present',
+            fixed: 'right',
+            width: 80,
+            align: 'center',
+            render: (_, student) => {
+              const { present, total } = studentTotals(student._id);
+              return <Tag color="blue">{`${present}/${total}`}</Tag>;
+            },
+          },
+          {
+            title: 'Foiz',
+            key: 'percent',
+            fixed: 'right',
+            width: 70,
+            align: 'center',
+            render: (_, student) => {
+              const { present, total } = studentTotals(student._id);
+              if (!total) return '—';
+              return `${Math.round((present / total) * 100)}%`;
+            },
+          },
+        ]),
   ];
 
   const handleExport = () => {
@@ -180,6 +210,8 @@ export default function AttendanceReport() {
         <Empty description="Guruhni tanlang" />
       ) : !isLoading && students.length === 0 ? (
         <Empty description="Bu guruhda o'quvchi topilmadi" />
+      ) : !isLoading && days.length === 0 ? (
+        <Empty description="Bu oyda davomat hali belgilanmagan" />
       ) : (
         <Table
           rowKey="_id"
@@ -188,7 +220,9 @@ export default function AttendanceReport() {
           loading={isLoading}
           pagination={false}
           size={isMobile ? 'small' : 'middle'}
+          tableLayout="fixed"
           scroll={{ x: 'max-content' }}
+          style={isMobile ? { fontSize: 12 } : undefined}
         />
       )}
     </Card>
