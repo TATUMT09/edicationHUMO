@@ -183,19 +183,18 @@ function Sidebar({ collapsible, isMobile = false, onNavigate }) {
       onCollapse={onCollapse}
       className="navigation"
       width={256}
-      style={{
-        overflow: 'auto',
-        height: '100vh',
-
-        position: isMobile ? 'absolute' : 'relative',
-        bottom: '20px',
-        ...(!isMobile && {
-          // border: 'none',
-          ['left']: '20px',
-          top: '20px',
-          // borderRadius: '8px',
-        }),
-      }}
+      style={
+        isMobile
+          ? { overflow: 'auto', height: '100%' }
+          : {
+              overflow: 'auto',
+              height: '100vh',
+              position: 'relative',
+              bottom: '20px',
+              left: '20px',
+              top: '20px',
+            }
+      }
       theme={'light'}
     >
       <div
@@ -240,12 +239,20 @@ function Sidebar({ collapsible, isMobile = false, onNavigate }) {
 
 function MobileSidebar() {
   const [visible, setVisible] = useState(false);
+  const location = useLocation();
   const showDrawer = () => {
     setVisible(true);
   };
   const onClose = () => {
     setVisible(false);
   };
+
+  // Closing only on the Menu's onClick missed the logo (which navigates via
+  // its own onClick, not through the Menu) — closing on every route change
+  // instead covers that, the back button, and anything else that navigates.
+  useEffect(() => {
+    setVisible(false);
+  }, [location.pathname]);
 
   return (
     <>
